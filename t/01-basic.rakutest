@@ -1,0 +1,8 @@
+use Test;
+use Zef::Config;
+
+pass "replace me";
+
+done-testing;
+
+# vim: expandtab shiftwidth=4

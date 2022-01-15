@@ -1,0 +1,26 @@
+{
+  "auth": "zef:lizmat",
+  "authors": [
+    "Elizabeth Mattijsen"
+  ],
+  "build-depends": [
+  ],
+  "depends": [
+  ],
+  "description": "Manipulate Zef configurations",
+  "license": "Artistic-2.0",
+  "name": "Zef::Configuration",
+  "perl": "6.d",
+  "provides": {
+    "Zef::Configuration": "lib/Zef/Configuration.rakumod"
+  },
+  "resources": [
+  ],
+  "source-url": "https://github.com/lizmat/Zef-Configuration.git",
+  "tags": [
+    "ZEF"
+  ],
+  "test-depends": [
+  ],
+  "version": "0.0.1"
+}
