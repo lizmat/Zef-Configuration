@@ -40,7 +40,7 @@ Return a pretty JSON string with sorted keys for the object. Takes named paramet
 METHODS ON MOST CLASSES
 =======================
 
-With the exception of the `Zef::Configuration::License` and `Zef::Configuration::RepositoryGroup` classes, the following methods are always provided.
+With the exception of the `Zef::Configuration`, `Zef::Configuration::License` and `Zef::Configuration::RepositoryGroup` classes, the following attributes / methods are always provided.
 
 ### short-name
 
@@ -58,11 +58,121 @@ A boolean indicating whether the object is enabled. Defaults to `True`.
 
 Any comments applicable to this object. Defaults to the `Str` type object.
 
-CLASSES
-=======
-
 Zef::Configuration
+==================
+
+The `Zef::Configuration` class contains all information about a configuration of `Zef`. A `Zef::Configuration` object can be made in 6 different ways:
+
+CREATION
+--------
+
+```raku
+my $zc = Zef::Configuration.new;         # "factory settings"
+
+my $zc = Zef::Configuration.new(:user);  # from the user's Zef config
+
+my $zc = Zef::Configuration.new($io);    # from a file as an IO object
+
+my $zc = Zef::Configuration.new($json);  # a string containing JSON
+
+my $zc = Zef::Configuration.new(%hash);  # a hash, as decoded from JSON
+
+my $zc = Zef::Configuration.new:         # named arguments to set attributes
+  ConfigurationVersion => 2,
+  RootDir              => 'foo/bar',
+  ...
+;
+```
+
+ATTRIBUTES / METHODS
+--------------------
+
+It contains the following attributes / methods:
+
+### ConfigurationVersion
+
+The version of the configuration. Defaults to `1`.
+
+### RootDir
+
+The directory in which Zef keeps all of its information. Defaults to `$*HOME/.zef`.
+
+### StoreDir
+
+The directory in which Zef keeps all of the information that has been downloaded. Defaults to `RootDir ~ "/store"`.
+
+### TempDir
+
+The directory in which Zef stores temporary files. Defaults to `RootDir ~ "/tmp"`.
+
+### License
+
+A `Zef::Configuration::License` object. Defaults to `Zef::Configuration.default-licenses<default>`.
+
+### Repository
+
+An array of `Zef::Configuration::RepositoryGroup` objects in the order in which they will be checked when searching for distributions. Defaults to `Zef::Configuration.default-repository-groups` in the order: `primary`, `secondary`, `tertiary`, `last`.
+
+### Fetch
+
+An array of `Zef::Configuration::Fetch` objects. Defaults to `Zef::Configuration.default-fetch`.
+
+### Extract
+
+An array of `Zef::Configuration::Extract` objects. Defaults to `Zef::Configuration.default-extract`.
+
+### Build
+
+An array of `Zef::Configuration::Build` objects. Defaults to `Zef::Configuration.default-build`.
+
+### Test
+
+An array of `Zef::Configuration::Test` objects. Defaults to `Zef::Configuration.default-test`.
+
+### Report
+
+An array of `Zef::Configuration::Report` objects. Defaults to `Zef::Configuration.default-report`.
+
+### Install
+
+An array of `Zef::Configuration::Install` objects. Defaults to `Zef::Configuration.default-install`.
+
+### DefaultCUR
+
+An array of strings indicating which `CompUnitRepository`(s) to be used when installing a module. Defaults to `Zef::Configuration.default-defaultCUR`.
+
+ADDITIONAL METHODS
 ------------------
+
+### user-configuration
+
+Class method that returns an `IO::Path` object of the configuration file that Zef is using by default.
+
+### default-...
+
+Methods for getting the default state of a given aspect of the `Zef::Configuration` object.
+
+  * default-license
+
+  * default-repositories
+
+  * default-repositorygroups
+
+  * default-fetch
+
+  * default-extract
+
+  * default-build
+
+  * default-test
+
+  * default-report
+
+  * default-install
+
+  * default-defaultCUR
+
+Each of these can either called without any arguments: in that case a `Map` will be returned with each of the applicable objects, associated with a **tag**. Or it can be called with one of the valid tags, in which case the associated object will be returned.
 
 Zef::Configuration::License
 ---------------------------
@@ -71,6 +181,24 @@ Contains which licenses are `blacklist`ed and which ones are `whitelist`ed. Defa
 
 Zef::Configuration::Repository
 ------------------------------
+
+Contains the information about a repository in which distributions are located. It provided these additional attributes / methods:
+
+### name
+
+The full name of the repository. Defaults to the `short-name`.
+
+### auto-update
+
+The number of hours that should pass until a local copy of the distribution information about a repository should be considered stale. Defaults to `1`.
+
+### uses-path
+
+A boolean indicating whether the `path` field in the distribution should be used to obtain a distribution. Defaults to `False`, unless the repository's `short-name` equals `zef`.
+
+### mirrors
+
+An array of URLs that should be used to fetch the information about all the distributions in the repository.
 
 Zef::Configuration::RepositoryGroup
 -----------------------------------
