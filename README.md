@@ -148,15 +148,25 @@ ADDITIONAL METHODS
 
 Class method that returns an `IO::Path` object of the configuration file that Zef is using by default.
 
+### object-from-tag
+
+Instance method that allows selection of an object by its tag (usually the `short-name`) in one of the attributes of the `Zef::Configuration` object.
+
+Tags can be specified just by themselves if they are not ambiguous, else the group name should be prefixed with a hyphen inbetween (e.g. `license-default`).
+
+If an ambiguous tag is given, then a `List` of `Pair`s will be returned in which the key is a group name, and the value is the associated object.
+
+If only one object was found, then that will be returned. If no objects were found, then `Nil` will be returned.
+
 ### default-...
 
-Methods for getting the default state of a given aspect of the `Zef::Configuration` object.
+Instance methods for getting the default state of a given aspect of the `Zef::Configuration` object.
 
   * default-license
 
-  * default-repositories
+  * default-repository
 
-  * default-repositorygroups
+  * default-repositorygroup
 
   * default-fetch
 

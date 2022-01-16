@@ -214,6 +214,11 @@ my constant $install-default = Zef::Configuration::Install.new:
   :module<Zef::Service::InstallRakuDistribution>;
 
 #-------------------------------------------------------------------------------
+# CUR
+
+my constant $defaultCUR-default = ("auto",);
+
+#-------------------------------------------------------------------------------
 # Defaults
 
 my constant $default-licenses = Map.new: (
@@ -232,14 +237,14 @@ my constant $default-repository-groups = Map.new: (
   tertiary  => $group-tertiary,
   last      => $group-last,
 );
-my constant $default-fetch = Map.new: (
+my constant $default-fetches = Map.new: (
   git          => $fetch-git,
   path         => $fetch-path,
   curl         => $fetch-curl,
   wget         => $fetch-wget,
   pswebrequest => $fetch-pswebrequest,
 );
-my constant $default-extract = Map.new: (
+my constant $default-extracts = Map.new: (
   git     => $extract-git,
   path    => $extract-path,
   tar     => $extract-tar,
@@ -247,22 +252,24 @@ my constant $default-extract = Map.new: (
   unzip   => $extract-unzip,
   psunzip => $extract-psunzip,
 );
-my constant $default-build = Map.new: (
+my constant $default-builds = Map.new: (
   default  => $build-default,
   legacy   => $build-legacy,
 );
-my constant $default-test = Map.new: (
+my constant $default-tests = Map.new: (
   tap-harness => $test-tap-harness,
   prove       => $test-prove,
   raku-test   => $test-raku-test,
 );
-my constant $default-report = Map.new: (
+my constant $default-reports = Map.new: (
   file => $report-file,
 );
-my constant $default-install = Map.new: (
-  default  => $install-default,
+my constant $default-installs = Map.new: (
+  default => $install-default,
 );
-my constant $default-defaultCUR = ("auto",);
+my constant $default-defaultCURs = Map.new: (
+  default => $defaultCUR-default,
+);
 
 #-------------------------------------------------------------------------------
 # Configuration
@@ -283,7 +290,7 @@ class Zef::Configuration:ver<0.0.1>:auth<zef:lizmat> does JSONify {
     has Test:D    @.Test    = $test-tap-harness, $test-prove, $test-raku-test;
     has Report:D  @.Report  = $report-file;
     has Install:D @.Install = $install-default;
-    has Str:D     @.DefaultCUR = $default-defaultCUR;
+    has Str:D     @.DefaultCUR = $defaultCUR-default;
 
     multi method new(:$user!) {
         $user
@@ -377,35 +384,68 @@ class Zef::Configuration:ver<0.0.1>:auth<zef:lizmat> does JSONify {
           !! %map.sort(*.key).map: *.value.short-name
     }
 
-    method default-licenses($name) {
+    method default-license($name?) {
         self!default($default-licenses, $name)
     }
-    method default-repositories($name?) {
+    method default-repository($name?) {
         self!default($default-repositories, $name)
     }
-    method default-repository-groups($name?) {
+    method default-repository-group($name?) {
         self!default($default-repository-groups, $name)
     }
     method default-fetch($name?) {
-        self!default($default-fetch, $name)
+        self!default($default-fetches, $name)
     }
     method default-extract($name?) {
-        self!default($default-extract, $name)
+        self!default($default-extracts, $name)
     }
     method default-build($name?) {
-        self!default($default-build, $name)
+        self!default($default-builds, $name)
     }
     method default-test($name?) {
-        self!default($default-test, $name)
+        self!default($default-tests, $name)
     }
     method default-report($name?) {
-        self!default($default-report, $name)
+        self!default($default-reports, $name)
     }
     method default-install($name?) {
-        self!default($default-install, $name)
+        self!default($default-installs, $name)
     }
-    method default-defaultCUR() {
-        $default-defaultCUR
+    method default-defaultCUR($name?) {
+        self!default($default-defaultCURs, $name)
+    }
+
+    method object-from-tag($name) {
+        my @found;
+        @found.push(Pair.new("license", $!License)) if $name eq "default";
+
+        for @!Repository -> $group {
+            @found.append: $group.repositories.map: {
+                Pair.new("repository", $_) if .short-name eq $name
+            }
+        }
+
+        for (
+          fetch   => $default-fetches,
+          extract => $default-extracts,
+          build   => $default-builds,
+          test    => $default-tests,
+          report  => $default-reports,
+          install => $default-installs,
+        ) -> (:key($tag), :value(%map)) {
+            for %map -> (:key($key), :value($object)) {
+                @found.push(Pair.new($tag, $object))
+                  if $key eq $name | "$tag-$name";
+            }
+        }
+
+        @found.push(Pair.new("defaultCUR", @!DefaultCUR)) if $name eq "default";
+
+        @found
+          ?? @found == 1
+            ?? @found.head.value
+            !! @found.List
+          !! Nil
     }
 }
 
@@ -585,14 +625,29 @@ installing a module.  Defaults to C<Zef::Configuration.default-defaultCUR>.
 Class method that returns an C<IO::Path> object of the configuration file
 that Zef is using by default.
 
+=head3 object-from-tag
+
+Instance method that allows selection of an object by its tag (usually the
+C<short-name>) in one of the attributes of the C<Zef::Configuration> object.
+
+Tags can be specified just by themselves if they are not ambiguous, else
+the group name should be prefixed with a hyphen inbetween (e.g.
+C<license-default>).
+
+If an ambiguous tag is given, then a C<List> of C<Pair>s will be returned in
+which the key is a group name, and the value is the associated object.
+
+If only one object was found, then that will be returned.  If no objects
+were found, then C<Nil> will be returned.
+
 =head3 default-...
 
-Methods for getting the default state of a given aspect of the
+Instance methods for getting the default state of a given aspect of the
 C<Zef::Configuration> object.
 
 =item default-license
-=item default-repositories
-=item default-repositorygroups
+=item default-repository
+=item default-repositorygroup
 =item default-fetch
 =item default-extract
 =item default-build
