@@ -1,13 +1,41 @@
 use JSON::Fast:ver<0.16>;
 
 #-------------------------------------------------------------------------------
-# Subclasses
+# Roles
 
-class Zef::Configuration::License {
+my role JSONify {
+    method json(
+      Bool:D :$pretty      = True,
+      Bool:D :$sorted-keys = True,
+    --> Str:D) {
+        to-json self.hash, :$pretty, :$sorted-keys
+    }
+}
+
+my role Module does JSONify {
+    has Str:D  $.short-name is rw is required;
+    has Str:D  $.module     is rw is required;
+    has Bool() $.enabled    is rw = True;
+    has Str    $.comment    is rw;
+
+    method hash(--> Map:D) {
+        Map.new: (
+          :$!short-name,
+          :$!module,
+          (:1enabled if :$!enabled),
+          (:comment($_) with $!comment),
+        )
+    }
+}
+
+#-------------------------------------------------------------------------------
+# License
+
+class Zef::Configuration::License does JSONify {
     has @.blacklist;
     has @.whitelist  = "*";
 
-    method hash() {
+    method hash(--> Map:D) {
         Map.new: (
           :@!blacklist,
           :@!whitelist,
@@ -16,34 +44,27 @@ class Zef::Configuration::License {
 }
 my constant $default-license = Zef::Configuration::License.new;
 
-my role Zef::Configuration::Module {
-    has Str:D $.short-name is required;
-    has Str:D $.module     is required;
-    has Int:D $.enabled = 1;
-    has Str   $.comment;
+#-------------------------------------------------------------------------------
+# Install
 
-    method hash() {
-        Map.new: (
-          :$!short-name,
-          :$!module
-          :$!enabled,
-          (:comment($_) with $!comment),
-        )
-    }
-}
-
-class Zef::Configuration::Install does Zef::Configuration::Module { }
+class Zef::Configuration::Install does Module { }
 my constant $default-install = Zef::Configuration::Install.new:
   :short-name<install-raku-dist>,
   :module<Zef::Service::InstallRakuDistribution>;
 
-class Zef::Configuration::Report  does Zef::Configuration::Module { }
+#-------------------------------------------------------------------------------
+# Report
+
+class Zef::Configuration::Report  does Module { }
 my constant $file-reporter = Zef::Configuration::Report.new:
   :short-name<file-reporter>,
   :enabled(0),
   :module<Zef::Service::FileReporter>;
 
-class Zef::Configuration::Build   does Zef::Configuration::Module { }
+#-------------------------------------------------------------------------------
+# Build
+
+class Zef::Configuration::Build   does Module { }
 my constant $default-builder = Zef::Configuration::Build.new:
   :short-name<default-builder>,
   :module<Zef::Service::Shell::DistributionBuilder>;
@@ -51,12 +72,15 @@ my constant $legacy-builder = Zef::Configuration::Build.new:
   :short-name<legacy-builder>,
   :module<Zef::Service::Shell::LegacyBuild>;
 
-class Zef::Configuration::Fetch does Zef::Configuration::Module {
-    has Str $.scheme;
+#-------------------------------------------------------------------------------
+# Fetch
 
-    method hash() {
+class Zef::Configuration::Fetch does Module {
+    has Str $.scheme is rw;
+
+    method hash(--> Map:D) {
         Map.new: (
-          self.Zef::Configuration::Module::hash(),
+          self.Module::hash(),
           (options => %(:$!scheme) if $!scheme)
         )
     }
@@ -78,20 +102,22 @@ my constant $pswebrequest-fetch = Zef::Configuration::Fetch.new:
   :short-name<pswebrequest>,
   :module<Zef::Service::Shell::Powershell::download>;
 
-class Zef::Configuration::Repository does Zef::Configuration::Module {
-    has Str:D  $.name        = $!short-name;
-    has Int:D  $.auto-update = 1;
+#-------------------------------------------------------------------------------
+# Repository
+
+class Zef::Configuration::Repository does Module {
+    has Str:D  $.name        is rw = $!short-name;
+    has Int:D  $.auto-update is rw = 1;
+    has Bool() $.uses-path   is rw = $!name eq 'fez';
     has Str:D  @.mirrors;
 
-    method uses-path() { :uses-path(1) if $!name eq 'fez' }
-
-    method hash() {
+    method hash(--> Map:D) {
         Map.new: (
-          self.Zef::Configuration::Module::hash(),
+          self.Module::hash(),
           options => %(
             :$!name,
             :$!auto-update,
-            self.uses-path,
+            (:uses-path    if $!uses-path),
             :@!mirrors,
           )
         )
@@ -123,17 +149,20 @@ my constant $repo-rea = Zef::Configuration::Repository.new:
   :enabled(0),
   :mirrors<https://raw.githubusercontent.com/Raku/REA/main/META.json>;
 my constant $repo-cached = Zef::Configuration::Repository.new:
-  :short-name<rea>,
+  :short-name<cached>,
   :module<Zef::Repository::LocalCache>;
 
-class Zef::Configuration::RepositoryGroup {
+#-------------------------------------------------------------------------------
+# RepositoryGroup
+
+class Zef::Configuration::RepositoryGroup does JSONify {
     has Zef::Configuration::Repository:D @.repositories = ...;
 
     method TWEAK() {
         die "Must specify at least 1 repository" unless @!repositories;
     }
 
-    method hash() { @!repositories.map(*.hash).List }
+    method hash(--> List:D) { @!repositories.map(*.hash).List }
 }
 my constant $group-primary = Zef::Configuration::RepositoryGroup.new:
   :repositories($repo-fez);
@@ -144,7 +173,10 @@ my constant $group-tertiary = Zef::Configuration::RepositoryGroup.new:
 my constant $group-last = Zef::Configuration::RepositoryGroup.new:
   :repositories($repo-cached);
 
-class Zef::Configuration::Extract does Zef::Configuration::Module { }
+#-------------------------------------------------------------------------------
+# Extract
+
+class Zef::Configuration::Extract does Module { }
 my constant $extract-git = Zef::Configuration::Extract.new:
   :short-name<git>,
   :module<Zef::Service::Shell::git>,
@@ -166,7 +198,10 @@ my constant $extract-psunzip = Zef::Configuration::Extract.new:
   :short-name<psunzip>,
   :module<Zef::Service::Shell::PowerShell::unzip>;
 
-class Zef::Configuration::Test does Zef::Configuration::Module { }
+#-------------------------------------------------------------------------------
+# Test
+
+class Zef::Configuration::Test does Module { }
 my constant $test-tap-harness = Zef::Configuration::Test.new:
   :short-name<tap-harness>,
   :module<Zef::Service::Tap>,
@@ -179,15 +214,23 @@ my constant $test-raku-test = Zef::Configuration::Test.new:
   :module<Zef::Service::Shell::Test>;
 
 #-------------------------------------------------------------------------------
-# Zef::Configuration
+# Configuration
 
-class Zef::Configuration:ver<0.0.1>:auth<zef:lizmat> {
-    has Str:D     $.ConfigurationVersion = "1";
-    has Str:D     $.RootDir    = '$*HOME/.zef';
-    has Str:D     $.StoreDir   = "$!RootDir/store";
-    has Str:D     $.TempDir    = "$!RootDir/tmp";
+my constant $default-repositories = Map.new: (
+  fez    => $repo-fez,
+  cpan   => $repo-cpan,
+  p6c    => $repo-p6c,
+  rea    => $repo-rea,
+  cached => $repo-cached,
+);
+
+class Zef::Configuration:ver<0.0.1>:auth<zef:lizmat> does JSONify {
+    has Str:D     $.ConfigurationVersion is rw = "1";
+    has Str:D     $.RootDir              is rw = '$*HOME/.zef';
+    has Str:D     $.StoreDir             is rw  = "$!RootDir/store";
+    has Str:D     $.TempDir              is rw = "$!RootDir/tmp";
+    has License:D $.License              is rw = $default-license;
     has Str:D     @.DefaultCUR = "auto";
-    has License:D $.License = $default-license;
     has RepositoryGroup:D @.Repository =
       $group-primary, $group-secondary, $group-tertiary, $group-last;
     has Fetch:D   @.Fetch =
@@ -199,13 +242,13 @@ class Zef::Configuration:ver<0.0.1>:auth<zef:lizmat> {
     has Report:D  @.Report  = $file-reporter;
     has Test:D    @.Test    = $test-tap-harness, $test-prove, $test-raku-test;
 
-    proto method new(|) {*}
-    multi method new(:$local) {
-        $local
-          ?? self.new: from-json
-               "/Users/liz/Github/rakudo.moar/install/share/perl6/site/resources/BBFC8550DB3C26C4B99B98A664B28E8EAD6675C5.json"
-               .IO.slurp
+    multi method new(:$user!) {
+        $user
+          ?? self.new: self.user-configuration
           !! self.bless
+    }
+    multi method new(IO::Path:D $io) {
+        self.new: from-json $io.slurp
     }
     multi method new(%hash) {
         my %new = %hash<ConfigurationVersion RootDir StoreDir TempDir>:p;
@@ -224,10 +267,26 @@ class Zef::Configuration:ver<0.0.1>:auth<zef:lizmat> {
         }
 
         with %hash<Repository> -> @groups {
-            my @Repository := %new<Repository> := [];
+            my @RepositoryGroups;
             for @groups -> @_ {
-                @Repository.push: 
+                my @repositories;
+                for @_ -> %_ {
+                    my %new = %_<short-name enabled module>:p;
+                    with %_<options> -> %options {
+                        for <name auto-update uses-path> -> $name {
+                            %new{$name} := $_ with %options{$name};
+                        }
+                        with %options<mirrors> -> @mirrors {
+                            %new<mirrors> := @mirrors;
+                        }
+                    }
+                    @repositories.push:
+                      Zef::Configuration::Repository.new: |%new;
+                }
+                @RepositoryGroups.push:
+                  Zef::Configuration::RepositoryGroup.new: :@repositories;
             }
+            %new<Repository> := @RepositoryGroups;
         }
 
         for <Extract Build Install Report Test> -> $name {
@@ -241,7 +300,7 @@ class Zef::Configuration:ver<0.0.1>:auth<zef:lizmat> {
         self.bless: |%new
     }
 
-    method hash() {
+    method hash(--> Map:D) {
         Map.new: (
           :$!ConfigurationVersion,
           :$!RootDir,
@@ -258,10 +317,27 @@ class Zef::Configuration:ver<0.0.1>:auth<zef:lizmat> {
           :Test(@!Test.map(*.hash).List),
         )
     }
+
+    method user-configuration(--> IO:D) {
+        my $proc := run <zef --help>, :err;
+        with $proc.err.lines.first(*.starts-with('CONFIGURATION ')) {
+            .substr(14).IO
+        }
+    }
+
+    proto method default-repositories(|) {*}
+    multi method default-repositories() {
+        $default-repositories.sort(*.key).map: *.value.short-name
+    }
+    multi method default-repositories(str $name) {
+        $default-repositories{$name}
+    }
 }
 
-my $zc := Zef::Configuration.new(:local);
-say to-json $zc.hash, :sorted-keys;
+#my $zc := Zef::Configuration.new;
+#$zc.Repository[2].repositories[0].enabled = True;
+#say $zc.json;
+#say $zc.default-repositories;
 
 =begin pod
 
