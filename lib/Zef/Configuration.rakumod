@@ -42,7 +42,7 @@ class Zef::Configuration::License does JSONify {
         )
     }
 }
-my constant $default-license = Zef::Configuration::License.new;
+my constant $license-default = Zef::Configuration::License.new;
 
 #-------------------------------------------------------------------------------
 # Repository
@@ -216,12 +216,21 @@ my constant $install-default = Zef::Configuration::Install.new:
 #-------------------------------------------------------------------------------
 # Defaults
 
+my constant $default-licenses = Map.new: (
+  default => $license-default,
+);
 my constant $default-repositories = Map.new: (
   fez    => $repo-fez,
   cpan   => $repo-cpan,
   p6c    => $repo-p6c,
   rea    => $repo-rea,
   cached => $repo-cached,
+);
+my constant $default-repository-groups = Map.new: (
+  primary   => $group-primary,
+  secondary => $group-secondary,
+  tertiary  => $group-tertiary,
+  last      => $group-last,
 );
 my constant $default-fetch = Map.new: (
   git          => $fetch-git,
@@ -253,6 +262,7 @@ my constant $default-report = Map.new: (
 my constant $default-install = Map.new: (
   default  => $install-default,
 );
+my constant $default-defaultCUR = ("auto",);
 
 #-------------------------------------------------------------------------------
 # Configuration
@@ -262,8 +272,7 @@ class Zef::Configuration:ver<0.0.1>:auth<zef:lizmat> does JSONify {
     has Str:D     $.RootDir  is rw = '$*HOME/.zef';
     has Str:D     $.StoreDir is rw = "$!RootDir/store";
     has Str:D     $.TempDir  is rw = "$!RootDir/tmp";
-    has License:D $.License  is rw = $default-license;
-    has Str:D     @.DefaultCUR = "auto";
+    has License:D $.License  is rw = $license-default;
     has RepositoryGroup:D @.Repository =
       $group-primary, $group-secondary, $group-tertiary, $group-last;
     has Fetch:D   @.Fetch =
@@ -274,6 +283,7 @@ class Zef::Configuration:ver<0.0.1>:auth<zef:lizmat> does JSONify {
     has Test:D    @.Test    = $test-tap-harness, $test-prove, $test-raku-test;
     has Report:D  @.Report  = $report-file;
     has Install:D @.Install = $install-default;
+    has Str:D     @.DefaultCUR = $default-defaultCUR;
 
     multi method new(:$user!) {
         $user
@@ -282,6 +292,9 @@ class Zef::Configuration:ver<0.0.1>:auth<zef:lizmat> does JSONify {
     }
     multi method new(IO::Path:D $io) {
         self.new: from-json $io.slurp
+    }
+    multi method new(Str:D $json) {
+        self.new: from-json $json
     }
     multi method new(%hash) {
         my %new = %hash<ConfigurationVersion RootDir StoreDir TempDir>:p;
@@ -339,7 +352,6 @@ class Zef::Configuration:ver<0.0.1>:auth<zef:lizmat> does JSONify {
           :$!RootDir,
           :$!StoreDir,
           :$!TempDir,
-          :@!DefaultCUR,
           :License($!License.data),
           :Repository(@!Repository.map(*.data).List),
           :Fetch(@!Fetch.map(*.data).List),
@@ -348,6 +360,7 @@ class Zef::Configuration:ver<0.0.1>:auth<zef:lizmat> does JSONify {
           :Test(@!Test.map(*.data).List),
           :Report(@!Report.map(*.data).List),
           :Install(@!Install.map(*.data).List),
+          :@!DefaultCUR,
         )
     }
 
@@ -364,8 +377,14 @@ class Zef::Configuration:ver<0.0.1>:auth<zef:lizmat> does JSONify {
           !! %map.sort(*.key).map: *.value.short-name
     }
 
+    method default-licenses($name) {
+        self!default($default-licenses, $name)
+    }
     method default-repositories($name?) {
         self!default($default-repositories, $name)
+    }
+    method default-repository-groups($name?) {
+        self!default($default-repository-groups, $name)
     }
     method default-fetch($name?) {
         self!default($default-fetch, $name)
@@ -384,6 +403,9 @@ class Zef::Configuration:ver<0.0.1>:auth<zef:lizmat> does JSONify {
     }
     method default-install($name?) {
         self!default($default-install, $name)
+    }
+    method default-defaultCUR() {
+        $default-defaultCUR
     }
 }
 
@@ -437,9 +459,9 @@ string to be pretty, or have sorted keys.
 
 =head1 METHODS ON MOST CLASSES
 
-With the exception of the C<Zef::Configuration::License> and
-C<Zef::Configuration::RepositoryGroup> classes, the following methods are
-always provided.
+With the exception of the C<Zef::Configuration>, C<Zef::Configuration::License>
+and C<Zef::Configuration::RepositoryGroup> classes, the following attributes /
+methods are always provided.
 
 =head3 short-name
 
@@ -459,9 +481,130 @@ A boolean indicating whether the object is enabled.  Defaults to C<True>.
 
 Any comments applicable to this object.  Defaults to the C<Str> type object.
 
-=head1 CLASSES
+=head1 Zef::Configuration
 
-=head2 Zef::Configuration
+The C<Zef::Configuration> class contains all information about a configuration
+of C<Zef>.  A C<Zef::Configuration> object can be made in 6 different ways:
+
+=head2 CREATION
+
+=begin code :lang<raku>
+
+my $zc = Zef::Configuration.new;         # "factory settings"
+
+my $zc = Zef::Configuration.new(:user);  # from the user's Zef config
+
+my $zc = Zef::Configuration.new($io);    # from a file as an IO object
+
+my $zc = Zef::Configuration.new($json);  # a string containing JSON
+
+my $zc = Zef::Configuration.new(%hash);  # a hash, as decoded from JSON
+
+my $zc = Zef::Configuration.new:         # named arguments to set attributes
+  ConfigurationVersion => 2,
+  RootDir              => 'foo/bar',
+  ...
+;
+
+=end code
+
+=head2 ATTRIBUTES / METHODS
+
+It contains the following attributes / methods:
+
+=head3 ConfigurationVersion
+
+The version of the configuration.  Defaults to C<1>.
+
+=head3 RootDir
+
+The directory in which Zef keeps all of its information.  Defaults to
+C<$*HOME/.zef>.
+
+=head3 StoreDir
+
+The directory in which Zef keeps all of the information that has been
+downloaded.  Defaults to C<RootDir ~ "/store">.
+
+=head3 TempDir
+
+The directory in which Zef stores temporary files.  Defaults to
+C<RootDir ~ "/tmp">.
+
+=head3 License
+
+A C<Zef::Configuration::License> object.  Defaults to
+C<Zef::Configuration.default-licenses<default>>.
+
+=head3 Repository
+
+An array of C<Zef::Configuration::RepositoryGroup> objects in the order in
+which they will be checked when searching for distributions.  Defaults to
+C<Zef::Configuration.default-repository-groups> in the order: C<primary>,
+C<secondary>, C<tertiary>, C<last>.
+
+=head3 Fetch
+
+An array of C<Zef::Configuration::Fetch> objects.  Defaults to
+C<Zef::Configuration.default-fetch>.
+
+=head3 Extract
+
+An array of C<Zef::Configuration::Extract> objects.  Defaults to
+C<Zef::Configuration.default-extract>.
+
+=head3 Build
+
+An array of C<Zef::Configuration::Build> objects.  Defaults to
+C<Zef::Configuration.default-build>.
+
+=head3 Test
+
+An array of C<Zef::Configuration::Test> objects.  Defaults to
+C<Zef::Configuration.default-test>.
+
+=head3 Report
+
+An array of C<Zef::Configuration::Report> objects.  Defaults to
+C<Zef::Configuration.default-report>.
+
+=head3 Install
+
+An array of C<Zef::Configuration::Install> objects.  Defaults to
+C<Zef::Configuration.default-install>.
+
+=head3 DefaultCUR
+
+An array of strings indicating which C<CompUnitRepository>(s) to be used when
+installing a module.  Defaults to C<Zef::Configuration.default-defaultCUR>.
+
+=head2 ADDITIONAL METHODS
+
+=head3 user-configuration
+
+Class method that returns an C<IO::Path> object of the configuration file
+that Zef is using by default.
+
+=head3 default-...
+
+Methods for getting the default state of a given aspect of the
+C<Zef::Configuration> object.
+
+=item default-license
+=item default-repositories
+=item default-repositorygroups
+=item default-fetch
+=item default-extract
+=item default-build
+=item default-test
+=item default-report
+=item default-install
+=item default-defaultCUR
+
+Each of these can either called without any arguments: in that case a C<Map>
+will be returned with each of the applicable objects, associated with a
+B<tag>.  Or it can be called with one of the valid tags, in which case the
+associated object will be returned.
 
 =head2 Zef::Configuration::License
 
@@ -470,6 +613,29 @@ Defaults to no blacklisted licenses, and C<"*"> in the whitelist, indicating
 that any license will be acceptable.  Does not contain any other information.
 
 =head2 Zef::Configuration::Repository
+
+Contains the information about a repository in which distributions are
+located.  It provided these additional attributes / methods:
+
+=head3 name
+
+The full name of the repository.  Defaults to the C<short-name>.
+
+=head3 auto-update
+
+The number of hours that should pass until a local copy of the distribution
+information about a repository should be considered stale.  Defaults to C<1>.
+
+=head3 uses-path
+
+A boolean indicating whether the C<path> field in the distribution should be
+used to obtain a distribution.  Defaults to C<False>, unless the repository's
+C<short-name> equals C<zef>.
+
+=head3 mirrors
+
+An array of URLs that should be used to fetch the information about all the
+distributions in the repository.
 
 =head2 Zef::Configuration::RepositoryGroup
 
