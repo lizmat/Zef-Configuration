@@ -10,15 +10,83 @@ SYNOPSIS
 
 ```raku
 use Zef::Configuration;
+
+my $zc = Zef::Configuration.new;         # factory settings
+
+my $zc = Zef::Configuration.new(:user);  # user settings
+
+my $zc = Zef::Configuration.new($io);    # from a config file path
 ```
+
+Or use the command-line interface:
+
+    $ zef-configure
+
+    $ zef-configure enable something
+
+    $ zef-configure disable something
+
+    $ zef-configure reset
 
 DESCRIPTION
 ===========
 
-Zef::Configuration is a class that allows you to manipulate the configuration of Zef.
+Zef::Configuration is a class that allows you to manipulate the configuration of Zef programmatically. Perhaps more importantly, it provides a command-line script `zef-configure` that allows you to perform simple actions to Zef's config-files.
+
+COMMAND-LINE INTERFACE
+======================
+
+General named arguments
+-----------------------
+
+### config-path
+
+    $ zef-configure --config-path=~/.zef/config.json
+
+The `config-path` named argument can be used to indicate the location of the configuration to read from / write to.
+
+### dry-run
+
+    $ zef-configure enable rea --dry-run
+
+The <dry-run> names argument can be used to inhibit writing any changes to the configuration file.
+
+The `zef-configure` script that is installed with this module, allows for the following actions:
+
+Getting an overview
+-------------------
+
+    $ zef-configure
+
+Calling `zef-configure` without any parameters (except maybe the `config-path` parameter) will show an overview of all the settings in the configuration. The names shown can be used to indicate what part of the configuration you want changed.
+
+Enabling a setting
+------------------
+
+    $ zef-configure enable rea
+
+If a setting is disabled, then you can enable it with the `enable` directive, followed by the name of the setting you want enabled.
+
+Disabling a setting
+-------------------
+
+    $ zef-configure disable cpan
+
+If a setting is enabled, then you can disable it with the `disable` directive, followed by the name of the setting you want disabled.
+
+Reset to factory settings
+-------------------------
+
+    $ zef-configure reset
+
+To completely reset a configuration to the "factory" settings, you can use the `reset` directive.
+
+    $ zef-configure reset --config-path=~/.zef/config.json
+
+You can also use this function in combination with `config-=path` to create a configuration file with the "factory" settings.
 
 GENERAL NOTES
--------------
+=============
 
 All of the attributes of the classes provided by this distribution, are either an `Array` (and thus mutable), or a an attribute with the `is rw` trait applied to it. This is generally ok, since it is expected that this module will mostly only be used by a relatively short-lived CLI.
 
@@ -29,6 +97,10 @@ METHODS ON ALL CLASSES
 
 All of these classes provided by this distribution provide these methods (apart from the standard methods provided by Raku).
 
+### new
+
+Apart from the normal way of creating objects with named arguments, one can also specify a hash as returned with `data` to create an object.
+
 ### data
 
 Return a Raku data-structure for the object. This is usually a `Map`, but can also be a `List`.
@@ -36,6 +108,10 @@ Return a Raku data-structure for the object. This is usually a `Map`, but can al
 ### json
 
 Return a pretty JSON string with sorted keys for the object. Takes named parameters `:!pretty` and `:!sorted-keys` should you not want the JSON string to be pretty, or have sorted keys.
+
+### status
+
+Return a string describing the status of the object.
 
 METHODS ON MOST CLASSES
 =======================

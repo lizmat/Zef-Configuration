@@ -18,13 +18,21 @@ my role Module does JSONify {
     has Bool() $.enabled    is rw = True;
     has Str    $.comment    is rw;
 
+    multi method new(Module: %data) { self.new: |%data }
+
     method data(--> Map:D) {
         Map.new: (
           :$!short-name,
           :$!module,
-          (:1enabled if :$!enabled),
+          :enabled($!enabled.Int),
           (:comment($_) with $!comment),
         )
+    }
+
+    method status(--> Str:D) {
+        $!enabled
+          ?? $!short-name
+          !! "$!short-name (disabled)"
     }
 }
 
@@ -32,14 +40,22 @@ my role Module does JSONify {
 # License
 
 class Zef::Configuration::License does JSONify {
-    has @.blacklist;
-    has @.whitelist  = "*";
+    has $.blacklist = ();
+    has $.whitelist = ("*",);
+
+    multi method new(Zef::Configuration::License: %data) {
+        self.new: |%data
+    }
 
     method data(--> Map:D) {
         Map.new: (
-          :@!blacklist,
-          :@!whitelist,
+          :$!blacklist,
+          :$!whitelist,
         )
+    }
+
+    method status(--> Str:D) {
+        "blacklist($!blacklist) whitelist($!whitelist)"
     }
 }
 my constant $license-default = Zef::Configuration::License.new;
@@ -52,6 +68,19 @@ class Zef::Configuration::Repository does Module {
     has Int:D  $.auto-update is rw = 1;
     has Bool() $.uses-path   is rw = $!name eq 'fez';
     has Str:D  @.mirrors;
+
+    multi method new(Zef::Configuration::Repository: %data) {
+        my %new = %data<short-name enabled module>:p;
+        with %data<options> -> %options {
+            for <name auto-update uses-path> -> $name {
+                %new{$name} := $_ with %options{$name};
+            }
+            with %options<mirrors> -> @mirrors {
+                %new<mirrors> := @mirrors;
+            }
+        }
+        self.new: |%new
+    }
 
     method data(--> Map:D) {
         Map.new: (
@@ -98,13 +127,18 @@ my constant $repo-cached = Zef::Configuration::Repository.new:
 # RepositoryGroup
 
 class Zef::Configuration::RepositoryGroup does JSONify {
-    has Zef::Configuration::Repository:D @.repositories = ...;
+    has Zef::Configuration::Repository:D @.repositories;
 
     method TWEAK() {
         die "Must specify at least 1 repository" unless @!repositories;
     }
 
     method data(--> List:D) { @!repositories.map(*.data).List }
+    method status() {
+        @!repositories == 1
+          ?? @!repositories.head.status
+          !! '(' ~ @!repositories.map(*.status).join(',') ~ ')'
+    }
 }
 my constant $group-primary = Zef::Configuration::RepositoryGroup.new:
   :repositories($repo-fez);
@@ -120,6 +154,12 @@ my constant $group-last = Zef::Configuration::RepositoryGroup.new:
 
 class Zef::Configuration::Fetch does Module {
     has Str $.scheme is rw;
+
+    multi method new(Zef::Configuration::Fetch: %data) {
+        my %new = %data<short-name module enabled>:p;
+        %new<scheme> := $_ with %data<options><scheme>;
+        self.new: |%new
+    }
 
     method data(--> Map:D) {
         Map.new: (
@@ -253,8 +293,8 @@ my constant $default-extracts = Map.new: (
   psunzip => $extract-psunzip,
 );
 my constant $default-builds = Map.new: (
-  default  => $build-default,
-  legacy   => $build-legacy,
+  default-builder => $build-default,
+  legacy-builder  => $build-legacy,
 );
 my constant $default-tests = Map.new: (
   tap-harness => $test-tap-harness,
@@ -265,7 +305,7 @@ my constant $default-reports = Map.new: (
   file => $report-file,
 );
 my constant $default-installs = Map.new: (
-  default => $install-default,
+  install-raku-dist => $install-default,
 );
 my constant $default-defaultCURs = Map.new: (
   default => $defaultCUR-default,
@@ -306,49 +346,37 @@ class Zef::Configuration:ver<0.0.1>:auth<zef:lizmat> does JSONify {
     multi method new(%hash) {
         my %new = %hash<ConfigurationVersion RootDir StoreDir TempDir>:p;
 
-        with %hash<DefaultCUR> -> @_ { %new<DefaultCUR> := @_ }
-
         with %hash<License> -> %_ {
-            %new<License> := Zef::Configuration::License.new: |%_;
-        }
-        with %hash<Fetch> -> @_ {
-            %new<Fetch> := @_.map( -> %_ {
-                my %new = %_<short-name module>:p;
-                %new<scheme> := $_ with %_<options><scheme>;
-                Zef::Configuration::Fetch.new: |%new
-            }).List;
+            %new<License> := Zef::Configuration::License.new: %_;
         }
 
         with %hash<Repository> -> @groups {
             my @RepositoryGroups;
             for @groups -> @_ {
-                my @repositories;
-                for @_ -> %_ {
-                    my %new = %_<short-name enabled module>:p;
-                    with %_<options> -> %options {
-                        for <name auto-update uses-path> -> $name {
-                            %new{$name} := $_ with %options{$name};
-                        }
-                        with %options<mirrors> -> @mirrors {
-                            %new<mirrors> := @mirrors;
-                        }
-                    }
-                    @repositories.push:
-                      Zef::Configuration::Repository.new: |%new;
-                }
                 @RepositoryGroups.push:
-                  Zef::Configuration::RepositoryGroup.new: :@repositories;
+                  Zef::Configuration::RepositoryGroup.new:
+                    repositories => @_.map(-> %_ {
+                        Zef::Configuration::Repository.new: %_
+                    }).List
             }
             %new<Repository> := @RepositoryGroups;
         }
 
+        with %hash<Fetch> -> @_ {
+            %new<Fetch> := @_.map(-> %_ {
+                Zef::Configuration::Fetch.new: %_
+            }).List;
+        }
+
         for <Extract Build Install Report Test> -> $name {
             with %hash{$name} -> @_ {
-                %new{$name} := @_.map({
-                    ::("Zef::Configuration::$name").new(|$_) }
+                %new{$name} := @_.map(-> %_ {
+                    ::("Zef::Configuration::$name").new(%_) }
                 ).List;
             }
         }
+
+        with %hash<DefaultCUR> -> @_ { %new<DefaultCUR> := @_ }
 
         self.bless: |%new
     }
@@ -375,6 +403,26 @@ class Zef::Configuration:ver<0.0.1>:auth<zef:lizmat> does JSONify {
         my $proc := run <zef --help>, :err;
         with $proc.err.lines.first(*.starts-with('CONFIGURATION ')) {
             .substr(14).IO
+        }
+    }
+
+    method status(--> Str:D) {
+        ( "   License: $!License.status()",
+          "Repository: @!Repository.map(*.status).join(', ')",
+          "     Fetch: @!Fetch.map(*.status).join(', ')",
+          "   Extract: @!Extract.map(*.status).join(', ')",
+          "     Build: @!Build.map(*.status).join(', ')",
+          "      Test: @!Test.map(*.status).join(', ')",
+          "    Report: @!Report.map(*.status).join(', ')",
+          "   Install: @!Install.map(*.status).join(', ')",
+          "DefaultCUR: @!DefaultCUR.join(', ')",
+        ).join("\n")
+    }
+
+    method group-status($object --> Str:D) {
+        with $object.^name {
+            my $group := .substr(.rindex('::') + 2);
+            "$group: " ~ self."$group"().map(*.status).join(', ')
         }
     }
 
@@ -417,29 +465,25 @@ class Zef::Configuration:ver<0.0.1>:auth<zef:lizmat> does JSONify {
 
     method object-from-tag($name) {
         my @found;
-        @found.push(Pair.new("license", $!License)) if $name eq "default";
+#        @found.push(Pair.new("license", $!License)) if $name eq "default";
 
         for @!Repository -> $group {
             @found.append: $group.repositories.map: {
-                Pair.new("repository", $_) if .short-name eq $name
+                Pair.new("Repository", $_) if .short-name eq $name
             }
         }
 
         for (
-          fetch   => $default-fetches,
-          extract => $default-extracts,
-          build   => $default-builds,
-          test    => $default-tests,
-          report  => $default-reports,
-          install => $default-installs,
-        ) -> (:key($tag), :value(%map)) {
-            for %map -> (:key($key), :value($object)) {
-                @found.push(Pair.new($tag, $object))
-                  if $key eq $name | "$tag-$name";
+          :@!Fetch, :@!Extract, :@!Build, :@!Test, :@!Report,:@!Install,
+        ) -> (:key($group), :value($entries)) {
+            for @$entries {
+                my $short-name := .short-name;
+                @found.push(Pair.new($group, $_))
+                  if $name eq $short-name | "$group-$short-name";
             }
         }
 
-        @found.push(Pair.new("defaultCUR", @!DefaultCUR)) if $name eq "default";
+#        @found.push(Pair.new("defaultCUR", @!DefaultCUR)) if $name eq "default";
 
         @found
           ?? @found == 1
@@ -461,14 +505,88 @@ Zef::Configuration - Manipulate Zef configurations
 
 use Zef::Configuration;
 
+my $zc = Zef::Configuration.new;         # factory settings
+
+my $zc = Zef::Configuration.new(:user);  # user settings
+
+my $zc = Zef::Configuration.new($io);    # from a config file path
+
 =end code
+
+Or use the command-line interface:
+
+    $ zef-configure
+
+    $ zef-configure enable something
+
+    $ zef-configure disable something
+
+    $ zef-configure reset
 
 =head1 DESCRIPTION
 
 Zef::Configuration is a class that allows you to manipulate the configuration
-of Zef.
+of Zef programmatically.  Perhaps more importantly, it provides a command-line
+script C<zef-configure> that allows you to perform simple actions to Zef's
+config-files.
 
-=head2 GENERAL NOTES
+=head1 COMMAND-LINE INTERFACE
+
+=head2 General named arguments
+
+=head3 config-path
+
+    $ zef-configure --config-path=~/.zef/config.json
+
+The C<config-path> named argument can be used to indicate the location
+of the configuration to read from / write to.
+
+=head3 dry-run
+
+    $ zef-configure enable rea --dry-run
+
+The <dry-run> names argument can be used to inhibit writing any changes
+to the configuration file.
+
+The C<zef-configure> script that is installed with this module, allows for
+the following actions:
+
+=head2 Getting an overview
+
+    $ zef-configure
+
+Calling C<zef-configure> without any parameters (except maybe the
+C<config-path> parameter) will show an overview of all the settings in
+the configuration.  The names shown can be used to indicate what part
+of the configuration you want changed.
+
+=head2 Enabling a setting
+
+    $ zef-configure enable rea
+
+If a setting is disabled, then you can enable it with the C<enable>
+directive, followed by the name of the setting you want enabled.
+
+=head2 Disabling a setting
+
+    $ zef-configure disable cpan
+
+If a setting is enabled, then you can disable it with the C<disable>
+directive, followed by the name of the setting you want disabled.
+
+=head2 Reset to factory settings
+
+    $ zef-configure reset
+
+To completely reset a configuration to the "factory" settings, you can
+use the C<reset> directive.
+
+    $ zef-configure reset --config-path=~/.zef/config.json
+
+You can also use this function in combination with C<config-=path> to
+create a configuration file with the "factory" settings.
+
+=head1 GENERAL NOTES
 
 All of the attributes of the classes provided by this distribution, are
 either an C<Array> (and thus mutable), or a an attribute with the C<is rw>
@@ -486,6 +604,11 @@ clone with changed values.
 All of these classes provided by this distribution provide these methods
 (apart from the standard methods provided by Raku).
 
+=head3 new
+
+Apart from the normal way of creating objects with named arguments, one can
+also specify a hash as returned with C<data> to create an object.
+
 =head3 data
 
 Return a Raku data-structure for the object.  This is usually a C<Map>, but
@@ -496,6 +619,10 @@ can also be a C<List>.
 Return a pretty JSON string with sorted keys for the object.  Takes named
 parameters C<:!pretty> and C<:!sorted-keys> should you not want the JSON
 string to be pretty, or have sorted keys.
+
+=head3 status
+
+Return a string describing the status of the object.
 
 =head1 METHODS ON MOST CLASSES
 

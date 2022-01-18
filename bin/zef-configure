@@ -1,0 +1,83 @@
+use Zef::Configuration:ver<0.0.1>:auth<zef:lizmat>;
+my constant ZC = Zef::Configuration;
+
+my %*SUB-MAIN-OPTS = :named-anywhere;
+my $zc-id   :="Zef Configuration Manager v{ZC.^ver}";
+
+sub io-from-path($path) {
+    $path ?? $path.IO !! ZC.user-configuration
+}
+
+sub meh($message) {
+    note $message;
+    exit 1;
+}
+
+sub overview($zc, $config) {
+    qq:to/MESSAGE/
+    $zc-id
+    -- from $config --
+    $zc.status()
+    MESSAGE
+}
+
+sub object-from-tag($zc, $tag) {
+    with $zc.object-from-tag($tag) -> \object {
+        object ~~ List
+          ?? meh "'$tag' Matched multiple times, select full tag-name:\n  {
+                 object.map({ .key ~ '-' ~ $tag }).join(', ');
+             }"
+          !! object
+    }
+    else {
+        meh "'$tag' unknown";
+    }
+}
+
+sub set-enabled($path, $tag, $state, $dry-run) {
+    my $io := io-from-path $path;
+    my $zc := ZC.new: $io;
+    my $object := object-from-tag $zc, $tag;
+    meh "'$tag' already { $state ?? 'en' !! 'dis' }enabled"
+      if $object.enabled == $state;
+
+    $object.enabled = $state;
+    say "** { $state ?? 'En' !! 'Dis' }abled '$tag'";
+    $io.spurt: $zc.json unless $dry-run;
+    say $zc.group-status($object);
+}
+
+multi sub MAIN(:config-path($path)) {
+#= Show information
+    say overview
+      ZC.new(io-from-path($path)),
+      $path ?? $path !! 'default config';
+    say $*USAGE;
+}
+
+multi sub MAIN("reset",
+  :config-path($path), Bool :$dry-run
+) {
+#= Reset to factory settings
+    my $io := io-from-path $path;
+    my $zc := ZC.new;
+    $io.spurt: $zc.json unless $dry-run;
+    say "** Configuration reset to factory settings";
+    say $zc.status;
+}
+
+multi sub MAIN("enable", $tag,
+  :config-path($path), Bool :$dry-run
+) {
+#= Enable an item in the configuration
+    set-enabled $path, $tag, True, $dry-run;
+}
+
+multi sub MAIN("disable", $tag,
+  :config-path($path), Bool :$dry-run
+) {
+#= Disable an item in the configuration
+    set-enabled $path, $tag, False, $dry-run;
+}
+
+# vim: expandtab shiftwidth=4
