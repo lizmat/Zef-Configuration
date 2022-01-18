@@ -49,7 +49,10 @@ The `config-path` named argument can be used to indicate the location of the con
 
     $ zef-configure enable rea --dry-run
 
-The <dry-run> names argument can be used to inhibit writing any changes to the configuration file.
+The `dry-run` named argument can be used to inhibit writing any changes to the configuration file.
+
+Possible actions
+----------------
 
 The `zef-configure` script that is installed with this module, allows for the following actions:
 

@@ -545,8 +545,10 @@ of the configuration to read from / write to.
 
     $ zef-configure enable rea --dry-run
 
-The <dry-run> names argument can be used to inhibit writing any changes
+The C<dry-run> named argument can be used to inhibit writing any changes
 to the configuration file.
+
+=head2 Possible actions
 
 The C<zef-configure> script that is installed with this module, allows for
 the following actions:
