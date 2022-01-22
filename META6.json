@@ -6,6 +6,7 @@
   "build-depends": [
   ],
   "depends": [
+    "zef:ver<0.13.5+>"
   ],
   "description": "Manipulate Zef configurations",
   "license": "Artistic-2.0",
@@ -22,5 +23,5 @@
   ],
   "test-depends": [
   ],
-  "version": "0.0.1"
+  "version": "0.0.2"
 }

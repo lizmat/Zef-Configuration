@@ -314,7 +314,7 @@ my constant $default-defaultCURs = Map.new: (
 #-------------------------------------------------------------------------------
 # Configuration
 
-class Zef::Configuration:ver<0.0.1>:auth<zef:lizmat> does JSONify {
+class Zef::Configuration:ver<0.0.2>:auth<zef:lizmat> does JSONify {
     has Str:D     $.ConfigurationVersion is rw = "1";
     has Str:D     $.RootDir  is rw = '$*HOME/.zef';
     has Str:D     $.StoreDir is rw = "$!RootDir/store";
