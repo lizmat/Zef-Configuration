@@ -19,9 +19,10 @@
   ],
   "source-url": "https://github.com/lizmat/Zef-Configuration.git",
   "tags": [
-    "ZEF"
+    "ZEF",
+    "CONFIG"
   ],
   "test-depends": [
   ],
-  "version": "0.0.2"
+  "version": "0.0.3"
 }

@@ -220,22 +220,23 @@ An array of `Zef::Configuration::Install` objects. Defaults to `Zef::Configurati
 
 An array of strings indicating which `CompUnitRepository`(s) to be used when installing a module. Defaults to `Zef::Configuration.default-defaultCUR`.
 
-ADDITIONAL METHODS
-------------------
+ADDITIONAL CLASS METHODS
+------------------------
+
+### is-configuration-writeable
+
+Class method that takes an `IO::Path` of a configuration file (e.g. as returned by `user-configuration`) and returns whether that file is safe to write to (files part of the installation should not be written to).
+
+### new-user-configuration
+
+Class method that returns an `IO::Path` with location at which a new configuration file can be stored, to be visible with future default incantations of Zef. Returns `Nil` if no such location could be found.
 
 ### user-configuration
 
 Class method that returns an `IO::Path` object of the configuration file that Zef is using by default.
 
-### object-from-tag
-
-Instance method that allows selection of an object by its tag (usually the `short-name`) in one of the attributes of the `Zef::Configuration` object.
-
-Tags can be specified just by themselves if they are not ambiguous, else the group name should be prefixed with a hyphen inbetween (e.g. `license-default`).
-
-If an ambiguous tag is given, then a `List` of `Pair`s will be returned in which the key is a group name, and the value is the associated object.
-
-If only one object was found, then that will be returned. If no objects were found, then `Nil` will be returned.
+ADDITIONAL INSTANCE METHODS
+---------------------------
 
 ### default-...
 
@@ -263,6 +264,16 @@ Instance methods for getting the default state of a given aspect of the `Zef::Co
 
 Each of these can either called without any arguments: in that case a `Map` will be returned with each of the applicable objects, associated with a **tag**. Or it can be called with one of the valid tags, in which case the associated object will be returned.
 
+### object-from-tag
+
+Instance method that allows selection of an object by its tag (usually the `short-name`) in one of the attributes of the `Zef::Configuration` object.
+
+Tags can be specified just by themselves if they are not ambiguous, else the group name should be prefixed with a hyphen inbetween (e.g. `license-default`).
+
+If an ambiguous tag is given, then a `List` of `Pair`s will be returned in which the key is a group name, and the value is the associated object.
+
+If only one object was found, then that will be returned. If no objects were found, then `Nil` will be returned.
+
 Zef::Configuration::License
 ---------------------------
 
@@ -279,7 +290,7 @@ The full name of the repository. Defaults to the `short-name`.
 
 ### auto-update
 
-The number of hours that should pass until a local copy of the distribution information about a repository should be considered stale. Defaults to `1`.
+The number of hours that should pass until a local copy of the distribution information about a repository should be considered stale. Defaults to `0` indicating no automatic updating should be done.
 
 ### uses-path
 

@@ -65,7 +65,7 @@ my constant $license-default = Zef::Configuration::License.new;
 
 class Zef::Configuration::Repository does Module {
     has Str:D  $.name        is rw = $!short-name;
-    has Int:D  $.auto-update is rw = 1;
+    has Int:D  $.auto-update is rw = 0;
     has Bool() $.uses-path   is rw = $!name eq 'fez';
     has Str:D  @.mirrors;
 
@@ -97,10 +97,12 @@ class Zef::Configuration::Repository does Module {
 my constant $repo-fez = Zef::Configuration::Repository.new:
   :short-name<fez>,
   :module<Zef::Repository::Ecosystems>,
+  :auto-update(1),
   :mirrors<https://360.zef.pm/>;
 my constant $repo-cpan = Zef::Configuration::Repository.new:
   :short-name<cpan>,
   :module<Zef::Repository::Ecosystems>,
+  :auto-update(1),
   :mirrors(
     "https://raw.githubusercontent.com/ugexe/Perl6-ecosystems/master/cpan1.json",
     "https://raw.githubusercontent.com/ugexe/Perl6-ecosystems/master/cpan.json",
@@ -109,6 +111,7 @@ my constant $repo-cpan = Zef::Configuration::Repository.new:
 my constant $repo-p6c = Zef::Configuration::Repository.new:
   :short-name<p6c>,
   :module<Zef::Repository::Ecosystems>,
+  :auto-update(1),
   :mirrors(
     "https://raw.githubusercontent.com/ugexe/Perl6-ecosystems/master/p6c1.json",
     "git://github.com/ugexe/Perl6-ecosystems.git",
@@ -117,6 +120,7 @@ my constant $repo-p6c = Zef::Configuration::Repository.new:
 my constant $repo-rea = Zef::Configuration::Repository.new:
   :short-name<rea>,
   :module<Zef::Repository::Ecosystems>,
+  :auto-update(1),
   :enabled(0),
   :mirrors<https://raw.githubusercontent.com/Raku/REA/main/META.json>;
 my constant $repo-cached = Zef::Configuration::Repository.new:
@@ -314,7 +318,7 @@ my constant $default-defaultCURs = Map.new: (
 #-------------------------------------------------------------------------------
 # Configuration
 
-class Zef::Configuration:ver<0.0.2>:auth<zef:lizmat> does JSONify {
+class Zef::Configuration:ver<0.0.3>:auth<zef:lizmat> does JSONify {
     has Str:D     $.ConfigurationVersion is rw = "1";
     has Str:D     $.RootDir  is rw = '$*HOME/.zef';
     has Str:D     $.StoreDir is rw = "$!RootDir/store";
@@ -399,10 +403,26 @@ class Zef::Configuration:ver<0.0.2>:auth<zef:lizmat> does JSONify {
         )
     }
 
-    method user-configuration(--> IO:D) {
+    method user-configuration(--> IO::Path:D) {
         my $proc := run <zef --help>, :err;
         with $proc.err.lines.first(*.starts-with('CONFIGURATION ')) {
-            .substr(14).IO
+            .substr(14).IO;
+        }
+    }
+
+    method is-configuration-writeable(IO:D $path --> Bool:D) {
+        $path.w && !$path.contains:
+          / '/resources/' <[0123456789ABCDEF]> ** 40 '.json' $ /
+    }
+
+    method new-user-configuration(--> IO::Path:D) {
+        with %*ENV<XDG_CONFIG_HOME> // $*HOME -> $home {
+            my $zef := $home.IO.add(".config").add("zef");
+            $zef.mkdir;
+            $zef.d ?? $zef.add("config.json") !! Nil
+        }
+        else {
+            Nil
         }
     }
 
@@ -747,27 +767,26 @@ C<Zef::Configuration.default-install>.
 An array of strings indicating which C<CompUnitRepository>(s) to be used when
 installing a module.  Defaults to C<Zef::Configuration.default-defaultCUR>.
 
-=head2 ADDITIONAL METHODS
+=head2 ADDITIONAL CLASS METHODS
+
+=head3 is-configuration-writeable
+
+Class method that takes an C<IO::Path> of a configuration file (e.g. as
+returned by C<user-configuration>) and returns whether that file is safe
+to write to (files part of the installation should not be written to).
+
+=head3 new-user-configuration
+
+Class method that returns an C<IO::Path> with location at which a new
+configuration file can be stored, to be visible with future default
+incantations of Zef.  Returns C<Nil> if no such location could be found.
 
 =head3 user-configuration
 
 Class method that returns an C<IO::Path> object of the configuration file
 that Zef is using by default.
 
-=head3 object-from-tag
-
-Instance method that allows selection of an object by its tag (usually the
-C<short-name>) in one of the attributes of the C<Zef::Configuration> object.
-
-Tags can be specified just by themselves if they are not ambiguous, else
-the group name should be prefixed with a hyphen inbetween (e.g.
-C<license-default>).
-
-If an ambiguous tag is given, then a C<List> of C<Pair>s will be returned in
-which the key is a group name, and the value is the associated object.
-
-If only one object was found, then that will be returned.  If no objects
-were found, then C<Nil> will be returned.
+=head2 ADDITIONAL INSTANCE METHODS
 
 =head3 default-...
 
@@ -790,6 +809,21 @@ will be returned with each of the applicable objects, associated with a
 B<tag>.  Or it can be called with one of the valid tags, in which case the
 associated object will be returned.
 
+=head3 object-from-tag
+
+Instance method that allows selection of an object by its tag (usually the
+C<short-name>) in one of the attributes of the C<Zef::Configuration> object.
+
+Tags can be specified just by themselves if they are not ambiguous, else
+the group name should be prefixed with a hyphen inbetween (e.g.
+C<license-default>).
+
+If an ambiguous tag is given, then a C<List> of C<Pair>s will be returned in
+which the key is a group name, and the value is the associated object.
+
+If only one object was found, then that will be returned.  If no objects
+were found, then C<Nil> will be returned.
+
 =head2 Zef::Configuration::License
 
 Contains which licenses are C<blacklist>ed and which ones are C<whitelist>ed.
@@ -808,7 +842,8 @@ The full name of the repository.  Defaults to the C<short-name>.
 =head3 auto-update
 
 The number of hours that should pass until a local copy of the distribution
-information about a repository should be considered stale.  Defaults to C<1>.
+information about a repository should be considered stale.  Defaults to C<0>
+indicating no automatic updating should be done.
 
 =head3 uses-path
 
