@@ -2,6 +2,9 @@ Revision history for Zef-Configuration
 
 {{$NEXT}}
 
+0.0.4  2022-01-23T21:52:46+01:00
+    - Add missing JSON::Fast dependency, ugexe++ for spotting
+
 0.0.3  2022-01-23T21:19:28+01:00
     - Consider the config file found in Zef's resources as off-limits
     - Create config file in appropriate place (based on Zef's preferences)

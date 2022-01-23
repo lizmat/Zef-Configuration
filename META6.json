@@ -6,6 +6,7 @@
   "build-depends": [
   ],
   "depends": [
+    "JSON::Fast:ver<0.16>",
     "zef:ver<0.13.5+>"
   ],
   "description": "Manipulate Zef configurations",
@@ -24,5 +25,5 @@
   ],
   "test-depends": [
   ],
-  "version": "0.0.3"
+  "version": "0.0.4"
 }
