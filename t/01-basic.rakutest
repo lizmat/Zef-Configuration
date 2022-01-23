@@ -1,8 +1,10 @@
 use Test;
-use Zef::Config;
+use Zef::Configuration;
+constant ZC = Zef::Configuration;
 
-pass "replace me";
+plan 1;
 
-done-testing;
+my $zc = ZC.new;
+isa-ok $zc, ZC;
 
 # vim: expandtab shiftwidth=4
