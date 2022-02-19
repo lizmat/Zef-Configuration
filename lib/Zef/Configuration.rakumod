@@ -1,4 +1,4 @@
-use JSON::Fast:ver<0.16>;
+use JSON::Fast:ver<0.17>:auth<cpan:TIMOTIMO>;
 
 #-------------------------------------------------------------------------------
 # Roles
@@ -318,7 +318,7 @@ my constant $default-defaultCURs = Map.new: (
 #-------------------------------------------------------------------------------
 # Configuration
 
-class Zef::Configuration:ver<0.0.5>:auth<zef:lizmat> does JSONify {
+class Zef::Configuration:ver<0.0.6>:auth<zef:lizmat> does JSONify {
     has Str:D     $.ConfigurationVersion is rw = "1";
     has Str:D     $.RootDir  is rw = '$*HOME/.zef';
     has Str:D     $.StoreDir is rw = "$!RootDir/store";
@@ -571,7 +571,8 @@ to the configuration file.
 =head2 Possible actions
 
 The C<zef-configure> script that is installed with this module, allows for
-the following actions:
+the following actions.  Please note that sub-commands (such as "enable")
+can be shortened as long as they are not ambiguous..
 
 =head2 Getting an overview
 

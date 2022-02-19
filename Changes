@@ -2,6 +2,11 @@ Revision history for Zef-Configuration
 
 {{$NEXT}}
 
+0.0.6  2022-02-19T12:26:00+01:00
+    - Add dependency to "shorten-sub-commands"
+    - Allow the CLI to use shortened sub commands
+    - Upped dependency on JSON::Fast
+
 0.0.5  2022-01-23T22:00:20+01:00
     - Fix basic testing, ugexe++ once again
 

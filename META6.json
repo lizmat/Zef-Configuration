@@ -6,7 +6,8 @@
   "build-depends": [
   ],
   "depends": [
-    "JSON::Fast:ver<0.16>",
+    "JSON::Fast:ver<0.17>:auth<cpan:TIMOTIMO>",
+    "shorten-sub-commands:ver<0.0.5>:auth<zef:lizmat>",
     "zef:ver<0.13.5+>"
   ],
   "description": "Manipulate Zef configurations",
@@ -25,5 +26,5 @@
   ],
   "test-depends": [
   ],
-  "version": "0.0.5"
+  "version": "0.0.6"
 }

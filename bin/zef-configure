@@ -1,4 +1,4 @@
-use Zef::Configuration:ver<0.0.5>:auth<zef:lizmat>;
+use Zef::Configuration:ver<0.0.6>:auth<zef:lizmat>;
 my constant ZC = Zef::Configuration;
 
 my %*SUB-MAIN-OPTS = :named-anywhere;
@@ -90,5 +90,7 @@ multi sub MAIN("disable", $tag,
 #= Disable an item in the configuration
     set-enabled $path, $tag, False, $dry-run;
 }
+
+use shorten-sub-commands:ver<0.0.5>:auth<zef:lizmat> &MAIN;
 
 # vim: expandtab shiftwidth=4

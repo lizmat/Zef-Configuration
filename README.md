@@ -54,7 +54,7 @@ The `dry-run` named argument can be used to inhibit writing any changes to the c
 Possible actions
 ----------------
 
-The `zef-configure` script that is installed with this module, allows for the following actions:
+The `zef-configure` script that is installed with this module, allows for the following actions. Please note that sub-commands (such as "enable") can be shortened as long as they are not ambiguous..
 
 Getting an overview
 -------------------
