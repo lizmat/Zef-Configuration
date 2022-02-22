@@ -2,6 +2,9 @@ Revision history for Zef-Configuration
 
 {{$NEXT}}
 
+0.0.7  2022-02-22T11:44:39+01:00
+    - Fix problem with user dir if XDG_CONFIG_HOME is set
+ 
 0.0.6  2022-02-19T12:26:00+01:00
     - Add dependency to "shorten-sub-commands"
     - Allow the CLI to use shortened sub commands

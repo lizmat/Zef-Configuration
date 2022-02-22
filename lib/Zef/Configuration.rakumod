@@ -318,7 +318,7 @@ my constant $default-defaultCURs = Map.new: (
 #-------------------------------------------------------------------------------
 # Configuration
 
-class Zef::Configuration:ver<0.0.6>:auth<zef:lizmat> does JSONify {
+class Zef::Configuration:ver<0.0.7>:auth<zef:lizmat> does JSONify {
     has Str:D     $.ConfigurationVersion is rw = "1";
     has Str:D     $.RootDir  is rw = '$*HOME/.zef';
     has Str:D     $.StoreDir is rw = "$!RootDir/store";
@@ -416,8 +416,14 @@ class Zef::Configuration:ver<0.0.6>:auth<zef:lizmat> does JSONify {
     }
 
     method new-user-configuration(--> IO::Path:D) {
-        with %*ENV<XDG_CONFIG_HOME> // $*HOME -> $home {
-            my $zef := $home.IO.add(".config").add("zef");
+        my $zef;
+        if %*ENV<XDG_CONFIG_HOME> -> $home {
+            $zef := $home.IO.add("zef");
+        }
+        elsif $*HOME -> $home {
+            $zef := $home.IO.add(".config").add("zef");
+        }
+        if $zef {
             $zef.mkdir;
             $zef.d ?? $zef.add("config.json") !! Nil
         }
