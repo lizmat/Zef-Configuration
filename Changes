@@ -2,6 +2,9 @@ Revision history for Zef-Configuration
 
 {{$NEXT}}
 
+0.0.8  2022-02-23T12:18:16+01:00
+    - Fix version mismatch in zef-configure
+
 0.0.7  2022-02-22T11:44:39+01:00
     - Fix problem with user dir if XDG_CONFIG_HOME is set
  
