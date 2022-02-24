@@ -1,4 +1,4 @@
-use Zef::Configuration:ver<0.0.8>:auth<zef:lizmat>;
+use Zef::Configuration:ver<0.0.9>:auth<zef:lizmat>;
 my constant ZC = Zef::Configuration;
 
 my %*SUB-MAIN-OPTS = :named-anywhere;
@@ -45,7 +45,7 @@ sub set-enabled($path, $tag, $state, $dry-run) {
     my $io := writeable-io-from-path $path;
     my $zc := $io.e ?? ZC.new($io) !! ZC.new;
     my $object := object-from-tag $zc, $tag;
-    meh "'$tag' already { $state ?? 'en' !! 'dis' }enabled"
+    meh "'$tag' already { $state ?? 'en' !! 'dis' }abled"
       if $object.enabled == $state;
 
     $object.enabled = $state;
@@ -66,11 +66,11 @@ multi sub MAIN(:$config-path) {
 }
 
 multi sub MAIN("reset",
-  :$config-path, Bool :$dry-run
+  :config-path($path), Bool :$dry-run
 ) {
 #= Reset to factory settings
     my $zc := ZC.new;
-    my $io := writeable-io-from-path $config-path;
+    my $io := writeable-io-from-path $path;
     $io.spurt: $zc.json unless $dry-run;
     say "** Configuration reset to factory settings in:";
     say "** $io\n----------------------------------------------";
@@ -89,6 +89,47 @@ multi sub MAIN("disable", $tag,
 ) {
 #= Disable an item in the configuration
     set-enabled $path, $tag, False, $dry-run;
+}
+
+multi sub MAIN("add-repository",
+       $tag,
+       $repo-url,
+       :$name = $tag,
+       :config-path($path),
+  Bool :$dry-run
+) {
+#= Add a repository at the beginning of the chain
+    my $io := writeable-io-from-path $path;
+    my $zc := $io.e ?? ZC.new($io) !! ZC.new;
+
+    meh "There is already an object with '$tag' in this configuration"
+      if $zc.object-from-tag: $tag;
+
+    my $repo := Zef::Configuration::Repository.new:
+      :short-name($tag), :$name, :mirrors($repo-url);
+
+    $zc.Repository.unshift:
+      Zef::Configuration::RepositoryGroup.new: repositories => $repo;
+
+    $io.spurt: $zc.json unless $dry-run;
+    say $zc.group-status($repo);
+}
+
+multi sub MAIN("remove-repository",
+       $tag,
+       :config-path($path),
+  Bool :$dry-run
+) {
+#= Remove a repository
+    my $io := writeable-io-from-path $path;
+    my $zc := $io.e ?? ZC.new($io) !! ZC.new;
+
+    my $repo := object-from-tag $zc, $tag;  # dies if fails
+    $zc.Repository .= grep: -> $group {
+        $group.repositories .= grep: *.short-name ne $tag;
+    }
+    $io.spurt: $zc.json unless $dry-run;
+    say "** Removed repository $tag ($repo.name())";
 }
 
 use shorten-sub-commands:ver<0.0.5>:auth<zef:lizmat> &MAIN;

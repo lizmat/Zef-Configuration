@@ -127,7 +127,7 @@ A name identifying the object. **Must** be specified in the creation of the obje
 
 ### module
 
-The name of the Raku module to be used by this object. **Must** be specified in the creation of the object.
+The name of the Raku module to be used by this object. **Must** be specified in the creation of the object unless there is a default available for the given object.
 
 ### enabled
 
@@ -288,9 +288,13 @@ Contains the information about a repository in which distributions are located. 
 
 The full name of the repository. Defaults to the `short-name`.
 
+### module
+
+The Raku module to be used for handling the `Zef::Configuration::Repository` defaults to `Zef::Repository::Ecosystems`.
+
 ### auto-update
 
-The number of hours that should pass until a local copy of the distribution information about a repository should be considered stale. Defaults to `0` indicating no automatic updating should be done.
+The number of hours that should pass until a local copy of the distribution information about a repository should be considered stale. Defaults to `1`.
 
 ### uses-path
 
@@ -298,7 +302,7 @@ A boolean indicating whether the `path` field in the distribution should be used
 
 ### mirrors
 
-An array of URLs that should be used to fetch the information about all the distributions in the repository.
+An array of URLs that should be used to fetch the information about all the distributions in the repository. **Must** be specified with the URL of at least one mirror if `auto-update` has been (implicitely) set to a non-zero value.
 
 Zef::Configuration::RepositoryGroup
 -----------------------------------

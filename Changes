@@ -2,6 +2,13 @@ Revision history for Zef-Configuration
 
 {{$NEXT}}
 
+0.0.9  2022-02-24T17:44:36+01:00
+    - Add support for "add-repository" to the CLI
+    - Add support for "remove-repository" to the CLI
+    - Add default for Z::C::Repository.module
+    - Change default for Z::C::Repository.auto-update to 1
+    - Some textual tweaks
+
 0.0.8  2022-02-23T12:18:16+01:00
     - Fix version mismatch in zef-configure
 

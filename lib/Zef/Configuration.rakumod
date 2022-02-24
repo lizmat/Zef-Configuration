@@ -14,9 +14,13 @@ my role JSONify {
 
 my role Module does JSONify {
     has Str:D  $.short-name is rw is required;
-    has Str:D  $.module     is rw is required;
+    has Str:D  $.module     is rw = self.default-module;
     has Bool() $.enabled    is rw = True;
     has Str    $.comment    is rw;
+
+    method default-module() {
+        X::Attribute::Required.new(:name<$!module>).throw
+    }
 
     multi method new(Module: %data) { self.new: |%data }
 
@@ -65,9 +69,16 @@ my constant $license-default = Zef::Configuration::License.new;
 
 class Zef::Configuration::Repository does Module {
     has Str:D  $.name        is rw = $!short-name;
-    has Int:D  $.auto-update is rw = 0;
+    has Int:D  $.auto-update is rw = 1;
     has Bool() $.uses-path   is rw = $!name eq 'fez';
     has Str:D  @.mirrors;
+
+    method default-module() { "Zef::Repository::Ecosystems" }
+
+    method TWEAK() {
+        X::Attribute::Required.new(:name<@!mirrors>).throw
+          if $!auto-update && !@!mirrors;
+    }
 
     multi method new(Zef::Configuration::Repository: %data) {
         my %new = %data<short-name enabled module>:p;
@@ -97,12 +108,10 @@ class Zef::Configuration::Repository does Module {
 my constant $repo-fez = Zef::Configuration::Repository.new:
   :short-name<fez>,
   :module<Zef::Repository::Ecosystems>,
-  :auto-update(1),
   :mirrors<https://360.zef.pm/>;
 my constant $repo-cpan = Zef::Configuration::Repository.new:
   :short-name<cpan>,
   :module<Zef::Repository::Ecosystems>,
-  :auto-update(1),
   :mirrors(
     "https://raw.githubusercontent.com/ugexe/Perl6-ecosystems/master/cpan1.json",
     "https://raw.githubusercontent.com/ugexe/Perl6-ecosystems/master/cpan.json",
@@ -111,7 +120,6 @@ my constant $repo-cpan = Zef::Configuration::Repository.new:
 my constant $repo-p6c = Zef::Configuration::Repository.new:
   :short-name<p6c>,
   :module<Zef::Repository::Ecosystems>,
-  :auto-update(1),
   :mirrors(
     "https://raw.githubusercontent.com/ugexe/Perl6-ecosystems/master/p6c1.json",
     "git://github.com/ugexe/Perl6-ecosystems.git",
@@ -120,11 +128,11 @@ my constant $repo-p6c = Zef::Configuration::Repository.new:
 my constant $repo-rea = Zef::Configuration::Repository.new:
   :short-name<rea>,
   :module<Zef::Repository::Ecosystems>,
-  :auto-update(1),
   :enabled(0),
   :mirrors<https://raw.githubusercontent.com/Raku/REA/main/META.json>;
 my constant $repo-cached = Zef::Configuration::Repository.new:
   :short-name<cached>,
+  :auto-update(0),
   :module<Zef::Repository::LocalCache>;
 
 #-------------------------------------------------------------------------------
@@ -318,7 +326,7 @@ my constant $default-defaultCURs = Map.new: (
 #-------------------------------------------------------------------------------
 # Configuration
 
-class Zef::Configuration:ver<0.0.8>:auth<zef:lizmat> does JSONify {
+class Zef::Configuration:ver<0.0.9>:auth<zef:lizmat> does JSONify {
     has Str:D     $.ConfigurationVersion is rw = "1";
     has Str:D     $.RootDir  is rw = '$*HOME/.zef';
     has Str:D     $.StoreDir is rw = "$!RootDir/store";
@@ -667,7 +675,8 @@ object.
 =head3 module
 
 The name of the Raku module to be used by this object.  B<Must> be specified
-in the creation of the object.
+in the creation of the object unless there is a default available for the
+given object.
 
 =head3 enabled
 
@@ -846,11 +855,15 @@ located.  It provided these additional attributes / methods:
 
 The full name of the repository.  Defaults to the C<short-name>.
 
+=head3 module
+
+The Raku module to be used for handling the C<Zef::Configuration::Repository>
+defaults to C<Zef::Repository::Ecosystems>.
+
 =head3 auto-update
 
 The number of hours that should pass until a local copy of the distribution
-information about a repository should be considered stale.  Defaults to C<0>
-indicating no automatic updating should be done.
+information about a repository should be considered stale.  Defaults to C<1>.
 
 =head3 uses-path
 
@@ -861,7 +874,9 @@ C<short-name> equals C<zef>.
 =head3 mirrors
 
 An array of URLs that should be used to fetch the information about all the
-distributions in the repository.
+distributions in the repository. B<Must> be specified with the URL of at
+least one mirror if C<auto-update> has been (implicitely) set to a non-zero
+value.
 
 =head2 Zef::Configuration::RepositoryGroup
 
