@@ -1,4 +1,4 @@
-use JSON::Fast:ver<0.17>:auth<cpan:TIMOTIMO>;
+use JSON::Fast:ver<0.19>:auth<cpan:TIMOTIMO>;
 
 #-------------------------------------------------------------------------------
 # Roles
@@ -75,11 +75,6 @@ class Zef::Configuration::Repository does Module {
 
     method default-module() { "Zef::Repository::Ecosystems" }
 
-    method TWEAK() {
-        X::Attribute::Required.new(:name<@!mirrors>).throw
-          if $!auto-update && !@!mirrors;
-    }
-
     multi method new(Zef::Configuration::Repository: %data) {
         my %new = %data<short-name enabled module>:p;
         with %data<options> -> %options {
@@ -141,7 +136,7 @@ my constant $repo-cached = Zef::Configuration::Repository.new:
 class Zef::Configuration::RepositoryGroup does JSONify {
     has Zef::Configuration::Repository:D @.repositories;
 
-    method TWEAK() {
+    submethod TWEAK() {
         die "Must specify at least 1 repository" unless @!repositories;
     }
 
@@ -251,7 +246,7 @@ my constant $test-raku-test = Zef::Configuration::Test.new:
 #-------------------------------------------------------------------------------
 # Report
 
-class Zef::Configuration::Report  does Module { }
+class Zef::Configuration::Report does Module { }
 my constant $report-file = Zef::Configuration::Report.new:
   :short-name<file-reporter>,
   :enabled(0),
@@ -326,7 +321,7 @@ my constant $default-defaultCURs = Map.new: (
 #-------------------------------------------------------------------------------
 # Configuration
 
-class Zef::Configuration:ver<0.0.9>:auth<zef:lizmat> does JSONify {
+class Zef::Configuration does JSONify {
     has Str:D     $.ConfigurationVersion is rw = "1";
     has Str:D     $.RootDir  is rw = '$*HOME/.zef';
     has Str:D     $.StoreDir is rw = "$!RootDir/store";
@@ -350,10 +345,10 @@ class Zef::Configuration:ver<0.0.9>:auth<zef:lizmat> does JSONify {
           !! self.bless
     }
     multi method new(IO::Path:D $io) {
-        self.new: from-json $io.slurp
+        self.new: from-json $io.slurp, :immutable
     }
     multi method new(Str:D $json) {
-        self.new: from-json $json
+        self.new: from-json $json, :immutable
     }
     multi method new(%hash) {
         my %new = %hash<ConfigurationVersion RootDir StoreDir TempDir>:p;
@@ -916,9 +911,13 @@ Elizabeth Mattijsen <liz@raku.rocks>
 Source can be located at: https://github.com/lizmat/Zef-Configuration .
 Comments and Pull Requests are welcome.
 
+If you like this module, or what I’m doing more generally, committing to a
+L<small sponsorship|https://github.com/sponsors/lizmat/>  would mean a great
+deal to me!
+
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2022 Elizabeth Mattijsen
+Copyright 2022, 2023 Elizabeth Mattijsen
 
 This library is free software; you can redistribute it and/or modify it under the Artistic License 2.0.
 

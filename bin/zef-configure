@@ -1,8 +1,9 @@
-use Zef::Configuration:ver<0.0.9>:auth<zef:lizmat>;
+use Zef::Configuration:ver<0.0.10>:auth<zef:lizmat>;
+my $zc-id :="Zef Configuration Manager v0.0.10";
+
 my constant ZC = Zef::Configuration;
 
 my %*SUB-MAIN-OPTS = :named-anywhere;
-my $zc-id   :="Zef Configuration Manager v{ZC.^ver}";
 
 sub io-from-path($path) {
     $path ?? $path.IO !! ZC.user-configuration

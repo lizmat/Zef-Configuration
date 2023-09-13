@@ -2,6 +2,12 @@ Revision history for Zef-Configuration
 
 {{$NEXT}}
 
+0.0.10  2023-09-13T15:22:23+02:00
+    - Updated dependencies
+    - Fixed issue block "zef-configure" to work on modern configs
+    - Added sponsor link
+    - Updated copyright year
+
 0.0.9  2022-02-24T17:44:36+01:00
     - Add support for "add-repository" to the CLI
     - Add support for "remove-repository" to the CLI
