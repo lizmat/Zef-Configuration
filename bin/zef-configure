@@ -1,5 +1,5 @@
-use Zef::Configuration:ver<0.0.10>:auth<zef:lizmat>;
-my $zc-id :="Zef Configuration Manager v0.0.10";
+use Zef::Configuration;
+my $zc-id :="Zef Configuration Manager v0.0.11";
 
 my constant ZC = Zef::Configuration;
 

@@ -107,6 +107,7 @@ my constant $repo-fez = Zef::Configuration::Repository.new:
 my constant $repo-cpan = Zef::Configuration::Repository.new:
   :short-name<cpan>,
   :module<Zef::Repository::Ecosystems>,
+  :enabled(0),
   :mirrors(
     "https://raw.githubusercontent.com/ugexe/Perl6-ecosystems/master/cpan1.json",
     "https://raw.githubusercontent.com/ugexe/Perl6-ecosystems/master/cpan.json",
@@ -115,6 +116,7 @@ my constant $repo-cpan = Zef::Configuration::Repository.new:
 my constant $repo-p6c = Zef::Configuration::Repository.new:
   :short-name<p6c>,
   :module<Zef::Repository::Ecosystems>,
+  :enabled(0),
   :mirrors(
     "https://raw.githubusercontent.com/ugexe/Perl6-ecosystems/master/p6c1.json",
     "git://github.com/ugexe/Perl6-ecosystems.git",
@@ -123,7 +125,6 @@ my constant $repo-p6c = Zef::Configuration::Repository.new:
 my constant $repo-rea = Zef::Configuration::Repository.new:
   :short-name<rea>,
   :module<Zef::Repository::Ecosystems>,
-  :enabled(0),
   :mirrors<https://raw.githubusercontent.com/Raku/REA/main/META.json>;
 my constant $repo-cached = Zef::Configuration::Repository.new:
   :short-name<cached>,
@@ -917,7 +918,7 @@ deal to me!
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2022, 2023 Elizabeth Mattijsen
+Copyright 2022, 2023, 2024 Elizabeth Mattijsen
 
 This library is free software; you can redistribute it and/or modify it under the Artistic License 2.0.
 
