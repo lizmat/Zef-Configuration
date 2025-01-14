@@ -182,7 +182,7 @@ my constant $fetch-git = Zef::Configuration::Fetch.new:
   :scheme<https>;
 my constant $fetch-path = Zef::Configuration::Fetch.new:
   :short-name<path>,
-  :module<Zef::Service::Shell::FetchPath>;
+  :module<Zef::Service::FetchPath>;
 my constant $fetch-curl = Zef::Configuration::Fetch.new:
   :short-name<curl>,
   :module<Zef::Service::Shell::curl>;
@@ -203,7 +203,7 @@ my constant $extract-git = Zef::Configuration::Extract.new:
   :comment("used to checkout (extract) specific tags/sha1/commit/branch from a git repo");
 my constant $extract-path = Zef::Configuration::Extract.new:
   :short-name<path>,
-  :module<Zef::Service::Shell::FetchPath>,
+  :module<Zef::Service::FetchPath>,
   :comment("if this goes before git then git wont be able to extract/checkout local paths because this reaches it first :(");
 my constant $extract-tar = Zef::Configuration::Extract.new:
   :short-name<tar>,
