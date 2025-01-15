@@ -1,6 +1,8 @@
 Revision history for Zef-Configuration
 
 {{$NEXT}}
+
+0.0.12  2025-01-15T11:20:26+01:00
     - Fix FetchPath misnomer, Patrick Böker++
     - Update dependencies
     - Add CI badge for each OS
