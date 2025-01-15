@@ -1,3 +1,4 @@
 .precomp/
 /Zef-Configuration-*
 /releases/
+*.rakucov

@@ -133,6 +133,6 @@ multi sub MAIN("remove-repository",
     say "** Removed repository $tag ($repo.name())";
 }
 
-use shorten-sub-commands:ver<0.0.5>:auth<zef:lizmat> &MAIN;
+use shorten-sub-commands:ver<0.0.7+>:auth<zef:lizmat> &MAIN;
 
 # vim: expandtab shiftwidth=4
