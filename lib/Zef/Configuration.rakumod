@@ -1,4 +1,4 @@
-use JSON::Fast:ver<0.19+>:auth<cpan:TIMOTIMO>;
+use JSON::Fast:ver<0.20+>:auth<zef:timo>;
 
 #-------------------------------------------------------------------------------
 # Roles

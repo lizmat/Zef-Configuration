@@ -5,25 +5,34 @@
   ],
   "build-depends": [
   ],
-  "depends": [
-    "JSON::Fast:ver<0.19+>:auth<cpan:TIMOTIMO>",
-    "shorten-sub-commands:ver<0.0.7+>:auth<zef:lizmat>"
-  ],
+  "depends": {
+    "runtime": {
+      "requires": [
+        "JSON::Fast:ver<0.20+>:auth<zef:timo>",
+        "shorten-sub-commands:ver<0.0.8+>:auth<zef:lizmat>"
+      ]
+    }
+  },
   "description": "Manipulate Zef configurations",
   "license": "Artistic-2.0",
   "name": "Zef::Configuration",
-  "perl": "6.d",
   "provides": {
     "Zef::Configuration": "lib/Zef/Configuration.rakumod"
   },
+  "raku": "6.d",
   "resources": [
   ],
   "source-url": "https://github.com/lizmat/Zef-Configuration.git",
+  "support": {
+    "bugtracker": "https://github.com/lizmat/Zef-Configuration/issues",
+    "email": "liz@raku.rocks",
+    "source": "https://github.com/lizmat/Zef-Configuration.git"
+  },
   "tags": [
     "ZEF",
     "CONFIG"
   ],
   "test-depends": [
   ],
-  "version": "0.0.12"
+  "version": "0.0.13"
 }

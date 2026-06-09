@@ -7,7 +7,6 @@ Zef::Configuration - Manipulate Zef configurations
 =head1 SYNOPSIS
 
 =begin code :lang<raku>
-
 use Zef::Configuration;
 
 my $zc = Zef::Configuration.new;         # factory settings
@@ -15,13 +14,11 @@ my $zc = Zef::Configuration.new;         # factory settings
 my $zc = Zef::Configuration.new(:user);  # user settings
 
 my $zc = Zef::Configuration.new($io);    # from a config file path
-
 =end code
 
 Or use the command-line interface:
 
 =begin output
-
 $ zef-configure
 
 $ zef-configure enable something
@@ -29,7 +26,6 @@ $ zef-configure enable something
 $ zef-configure disable something
 
 $ zef-configure reset
-
 =end output
 
 =head1 DESCRIPTION
@@ -46,9 +42,7 @@ config-files.
 =head3 config-path
 
 =begin output
-
 $ zef-configure --config-path=~/.zef/config.json
-
 =end output
 
 The C<config-path> named argument can be used to indicate the location
@@ -57,9 +51,7 @@ of the configuration to read from / write to.
 =head3 dry-run
 
 =begin output
-
 $ zef-configure enable rea --dry-run
-
 =end output
 
 The C<dry-run> named argument can be used to inhibit writing any changes
@@ -74,9 +66,7 @@ can be shortened as long as they are not ambiguous..
 =head2 Getting an overview
 
 =begin output
-
 $ zef-configure
-
 =end output
 
 Calling C<zef-configure> without any parameters (except maybe the
@@ -87,9 +77,7 @@ of the configuration you want changed.
 =head2 Enabling a setting
 
 =begin output
-
 $ zef-configure enable rea
-
 =end output
 
 If a setting is disabled, then you can enable it with the C<enable>
@@ -98,9 +86,7 @@ directive, followed by the name of the setting you want enabled.
 =head2 Disabling a setting
 
 =begin output
-
 $ zef-configure disable cpan
-
 =end output
 
 If a setting is enabled, then you can disable it with the C<disable>
@@ -109,18 +95,14 @@ directive, followed by the name of the setting you want disabled.
 =head2 Reset to factory settings
 
 =begin output
-
 $ zef-configure reset
-
 =end output
 
 To completely reset a configuration to the "factory" settings, you can
 use the C<reset> directive.
 
 =begin output
-
 $ zef-configure reset --config-path=~/.zef/config.json
-
 =end output
 
 You can also use this function in combination with C<config-=path> to
@@ -197,7 +179,6 @@ of C<Zef>.  A C<Zef::Configuration> object can be made in 6 different ways:
 =head2 CREATION
 
 =begin code :lang<raku>
-
 my $zc = Zef::Configuration.new;         # "factory settings"
 
 my $zc = Zef::Configuration.new(:user);  # from the user's Zef config
@@ -213,7 +194,6 @@ my $zc = Zef::Configuration.new:         # named arguments to set attributes
   RootDir              => 'foo/bar',
   ...
 ;
-
 =end code
 
 =head2 ATTRIBUTES / METHODS
@@ -425,7 +405,7 @@ deal to me!
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2022, 2023, 2024, 2025 Elizabeth Mattijsen
+Copyright 2022, 2023, 2024, 2025, 2026 Elizabeth Mattijsen
 
 This library is free software; you can redistribute it and/or modify it under the Artistic License 2.0.
 

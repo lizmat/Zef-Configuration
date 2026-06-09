@@ -2,6 +2,11 @@ Revision history for Zef-Configuration
 
 {{$NEXT}}
 
+0.0.13  2026-06-09T09:41:37+02:00
+    - Modernize META
+    - Update dependencies
+    - Update copyright year
+
 0.0.12  2025-01-15T11:20:26+01:00
     - Fix FetchPath misnomer, Patrick Böker++
     - Update dependencies
