@@ -2,6 +2,9 @@ Revision history for Zef-Configuration
 
 {{$NEXT}}
 
+0.0.14  2026-09-17T19:39:15+02:00
+    - Up dependency to ready RakuAST
+
 0.0.13  2026-06-09T09:41:37+02:00
     - Modernize META
     - Update dependencies

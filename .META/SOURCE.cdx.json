@@ -4,7 +4,7 @@
   "specVersion": "1.6",
   "version": 1,
   "metadata": {
-    "timestamp": "2026-06-08T22:54:56+00:00",
+    "timestamp": "2026-09-17T17:39:51+00:00",
     "lifecycles": [
       {
         "phase": "pre-build"
@@ -19,7 +19,7 @@
     "component": {
       "type": "library",
       "mime-type": "text/plain",
-      "bom-ref": "pkg:raku/zef:lizmat/Zef::Configuration@0.0.13",
+      "bom-ref": "pkg:raku/zef:lizmat/Zef::Configuration@0.0.14",
       "authors": [
         {
           "bom-ref": "ElizabethMattijsen",
@@ -29,7 +29,7 @@
       "publisher": "zef",
       "group": "zef:lizmat",
       "name": "Zef::Configuration",
-      "version": "0.0.13",
+      "version": "0.0.14",
       "description": "Manipulate Zef configurations",
       "scope": "required",
       "licenses": [
@@ -41,27 +41,23 @@
           }
         }
       ],
-      "purl": "pkg:raku/zef:lizmat/Zef::Configuration@0.0.13",
+      "purl": "pkg:raku/zef:lizmat/Zef::Configuration@0.0.14",
       "externalReferences": [
         {
-          "url": "https://github.com/lizmat/Zef-Configuration",
+          "url": "https://codeberg.org/lizmat/Zef-Configuration",
           "type": "distribution"
         },
         {
-          "url": "https://raku.land/zef:lizmat/Zef::Configuration?v=0.0.13",
+          "url": "https://raku.land/zef:lizmat/Zef::Configuration?v=0.0.14",
           "type": "documentation"
         },
         {
-          "url": "https://github.com/lizmat/Zef-Configuration/issues",
+          "url": "https://codeberg.org/lizmat/Zef-Configuration/issues",
           "type": "issue-tracker"
         },
         {
           "url": "https://spdx.org/licenses/Artistic-2.0.json",
           "type": "license"
-        },
-        {
-          "url": "https://github.com/lizmat/Zef-Configuration/archive/refs/tags/0.0.13.zip",
-          "type": "source-distribution"
         },
         {
           "url": "mailto:liz@raku.rocks",
@@ -87,7 +83,7 @@
         {
           "type": "library",
           "mime-type": "text/plain",
-          "bom-ref": "pkg:raku/zef:lizmat/SBOM::Raku@0.0.12",
+          "bom-ref": "pkg:raku/zef:lizmat/SBOM::Raku@0.0.14",
           "authors": [
             {
               "bom-ref": "ElizabethMattijsen",
@@ -97,7 +93,7 @@
           "publisher": "zef",
           "group": "zef:lizmat",
           "name": "SBOM::Raku",
-          "version": "0.0.12",
+          "version": "0.0.14",
           "description": "Raku specific SBOM functionality",
           "scope": "required",
           "licenses": [
@@ -109,27 +105,23 @@
               }
             }
           ],
-          "purl": "pkg:raku/zef:lizmat/SBOM::Raku@0.0.12",
+          "purl": "pkg:raku/zef:lizmat/SBOM::Raku@0.0.14",
           "externalReferences": [
             {
-              "url": "https://github.com/lizmat/SBOM-Raku",
+              "url": "https://codeberg.org/lizmat/SBOM-Raku",
               "type": "distribution"
             },
             {
-              "url": "https://raku.land/zef:lizmat/SBOM::Raku?v=0.0.12",
+              "url": "https://raku.land/zef:lizmat/SBOM::Raku?v=0.0.14",
               "type": "documentation"
             },
             {
-              "url": "https://github.com/lizmat/SBOM-Raku/issues",
+              "url": "https://codeberg.org/lizmat/SBOM-Raku/issues",
               "type": "issue-tracker"
             },
             {
               "url": "https://spdx.org/licenses/Artistic-2.0.json",
               "type": "license"
-            },
-            {
-              "url": "https://github.com/lizmat/SBOM-Raku/archive/refs/tags/0.0.12.zip",
-              "type": "source-distribution"
             },
             {
               "url": "mailto:liz@raku.rocks",
@@ -158,7 +150,7 @@
       "publisher": "Rakudo Core Developers",
       "group": "Rakudo Core Developers",
       "name": "Rakudo",
-      "version": "2026.05-80-gdde1224e5",
+      "version": "2026.08-433-gb83057b10",
       "description": "The Rakudo™ Compiler implementing the Raku® Programming Language",
       "scope": "required",
       "licenses": [
@@ -181,7 +173,7 @@
           "type": "issue-tracker"
         },
         {
-          "url": "https://github.com/rakudo/rakudo/archive/dde1224e5.zip",
+          "url": "https://github.com/rakudo/rakudo/archive/b83057b10.zip",
           "type": "source-distribution"
         },
         {
@@ -202,7 +194,7 @@
       "publisher": "The MoarVM Team",
       "group": "The MoarVM Team",
       "name": "Moar",
-      "version": "2026.05-8-g7b802a101",
+      "version": "2026.08-9-gebc3f7069",
       "description": "Short for \"Metamodel On A Runtime\", MoarVM is a modern virtual machine built for the Rakudo compiler and the NQP Compiler Toolchain.",
       "scope": "required",
       "licenses": [
@@ -229,7 +221,7 @@
           "type": "chat"
         },
         {
-          "url": "https://github.com/MoarVM/MoarVM.git/archive/refs/tags/7b802a101.zip",
+          "url": "https://github.com/MoarVM/MoarVM.git/archive/refs/tags/ebc3f7069.zip",
           "type": "source-distribution"
         }
       ]
@@ -237,7 +229,7 @@
     {
       "type": "library",
       "mime-type": "text/plain",
-      "bom-ref": "pkg:raku/zef:timo/JSON::Fast?vers=vers:raku/%3E=0.20",
+      "bom-ref": "pkg:raku/zef:timo/JSON::Fast?vers=vers:raku/%3E=0.21",
       "authors": [
         {
           "bom-ref": "TimoPaulssen",
@@ -259,7 +251,7 @@
       "publisher": "zef",
       "group": "zef:timo",
       "name": "JSON::Fast",
-      "version": "0.20",
+      "version": "0.21.0",
       "description": "A naive, fast json parser and serializer; drop-in replacement for JSON::Tiny",
       "scope": "required",
       "licenses": [
@@ -271,14 +263,14 @@
           }
         }
       ],
-      "purl": "pkg:raku/zef:timo/JSON::Fast@0.20",
+      "purl": "pkg:raku/zef:timo/JSON::Fast@0.21.0",
       "externalReferences": [
         {
           "url": "git://github.com/timo/json_fast",
           "type": "distribution"
         },
         {
-          "url": "https://raku.land/zef:timo/JSON::Fast?v=0.20",
+          "url": "https://raku.land/zef:timo/JSON::Fast?v=0.21.0",
           "type": "documentation"
         },
         {
@@ -290,24 +282,20 @@
   ],
   "externalReferences": [
     {
-      "url": "https://github.com/lizmat/Zef-Configuration",
+      "url": "https://codeberg.org/lizmat/Zef-Configuration",
       "type": "distribution"
     },
     {
-      "url": "https://raku.land/zef:lizmat/Zef::Configuration?v=0.0.13",
+      "url": "https://raku.land/zef:lizmat/Zef::Configuration?v=0.0.14",
       "type": "documentation"
     },
     {
-      "url": "https://github.com/lizmat/Zef-Configuration/issues",
+      "url": "https://codeberg.org/lizmat/Zef-Configuration/issues",
       "type": "issue-tracker"
     },
     {
       "url": "https://spdx.org/licenses/Artistic-2.0.json",
       "type": "license"
-    },
-    {
-      "url": "https://github.com/lizmat/Zef-Configuration/archive/refs/tags/0.0.13.zip",
-      "type": "source-distribution"
     },
     {
       "url": "mailto:liz@raku.rocks",
@@ -322,13 +310,13 @@
       ]
     },
     {
-      "ref": "pkg:raku/zef:lizmat/SBOM::Raku@0.0.12",
+      "ref": "pkg:raku/zef:lizmat/SBOM::Raku@0.0.14",
       "dependsOn": [
         "Rakudo"
       ]
     },
     {
-      "ref": "pkg:raku/zef:timo/JSON::Fast?vers=vers:raku/%3E=0.20"
+      "ref": "pkg:raku/zef:timo/JSON::Fast?vers=vers:raku/%3E=0.21"
     }
   ]
 }

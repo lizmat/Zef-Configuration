@@ -8,7 +8,7 @@
   "depends": {
     "runtime": {
       "requires": [
-        "JSON::Fast:ver<0.20+>:auth<zef:timo>",
+        "JSON::Fast:ver<0.21+>:auth<zef:timo>",
         "shorten-sub-commands:ver<0.0.8+>:auth<zef:lizmat>"
       ]
     }
@@ -22,11 +22,11 @@
   "raku": "6.d",
   "resources": [
   ],
-  "source-url": "https://github.com/lizmat/Zef-Configuration.git",
+  "source-url": "https://codeberg.org/lizmat/Zef-Configuration.git",
   "support": {
-    "bugtracker": "https://github.com/lizmat/Zef-Configuration/issues",
+    "bugtracker": "https://codeberg.org/lizmat/Zef-Configuration/issues",
     "email": "liz@raku.rocks",
-    "source": "https://github.com/lizmat/Zef-Configuration.git"
+    "source": "https://codeberg.org/lizmat/Zef-Configuration.git"
   },
   "tags": [
     "ZEF",
@@ -34,5 +34,5 @@
   ],
   "test-depends": [
   ],
-  "version": "0.0.13"
+  "version": "0.0.14"
 }
